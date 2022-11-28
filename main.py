@@ -4,6 +4,7 @@ import os
 import torch
 import yaml
 from ignite.contrib import metrics
+import datetime
 
 import constants as const
 import dataset
@@ -119,7 +120,7 @@ def train(args):
 
     os.makedirs(const.SAVE_DIR, exist_ok=True)
     save_dir = os.path.join(
-        const.SAVE_DIR, "exp%d" % len(os.listdir(const.SAVE_DIR))
+        const.SAVE_DIR, f"exp{len(os.listdir(const.SAVE_DIR))}_{args.category}_{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
     )
 
     config = yaml.safe_load(open(args.config, "r"))
@@ -165,16 +166,18 @@ def evaluate(args):
 def parse_args():
     parser = argparse.ArgumentParser(description="Train FastFlow on MVTec-AD dataset")
     parser.add_argument(
-        "-cfg", "--config", default='configs/resnet18.yaml', type=str, required=True, help="path to config file"
+        "-cfg", "--config", default='configs/resnet18.yaml', type=str,  help="path to config file",  # required=True,
     )
-    parser.add_argument("--data", type=str, default='datasets/MVTec', required=True, help="path to mvtec folder")
+    parser.add_argument("--data", type=str, default='datasets/MVTec', help="path to mvtec folder",
+                        # required=True,
+                        )
     parser.add_argument(
         "-cat",
         "--category",
         default='amz_1_down',
         type=str,
         choices=const.MVTEC_CATEGORIES,
-        required=True,
+        # required=True,
         help="category name in mvtec",
     )
     parser.add_argument("--eval", action="store_true", help="run eval only")
