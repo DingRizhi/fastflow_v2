@@ -1,0 +1,8 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+
+_fastflow_experiment_checkpoints/
+
+_results/
+/datasets/
