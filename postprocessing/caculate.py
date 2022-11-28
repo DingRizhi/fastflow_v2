@@ -53,5 +53,5 @@ def get_best_thredhold(model, dataloader):
     f_score_max = f_score[torch.argmax(f_score)]
     print("AUROC: {}; F-SCORE: {}; THRESHOLD: {}".format(auroc, f_score_max, threshold_best))
 
-    return threshold_best.item()
+    return auroc, f_score_max, threshold_best.item()
 

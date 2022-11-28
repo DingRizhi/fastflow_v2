@@ -91,7 +91,7 @@ def train_one_epoch(dataloader, model, optimizer, epoch):
             )
 
 
-def eval_once(dataloader, model, save_dir):
+def eval_once(dataloader, model, save_dir, best_auroc=0.0):
 
     model.eval()
     # auroc_metric = metrics.ROC_AUC()
@@ -105,10 +105,12 @@ def eval_once(dataloader, model, save_dir):
     #     auroc_metric.update((outputs, targets.type(torch.int64)))
     # auroc = auroc_metric.compute()
 
-    threshold_best = get_best_thredhold(model, dataloader)
-    visualize_heatmap(model, dataloader, save_dir, threshold_best)
+    auroc, f_score_max, threshold_best = get_best_thredhold(model, dataloader)
+    if auroc > best_auroc:
+        visualize_heatmap(model, dataloader, save_dir, threshold_best)
 
     # print("AUROC: {}".format(auroc))
+    return auroc
 
 
 def train(args):
@@ -130,11 +132,13 @@ def train(args):
     train_dataloader = build_train_data_loader(args, config)
     test_dataloader = build_test_data_loader(args, config)
     model.cuda()
+    best_auroc = 0.0
 
     for epoch in range(const.NUM_EPOCHS):
         train_one_epoch(train_dataloader, model, optimizer, epoch)
         if (epoch + 1) % const.EVAL_INTERVAL == 0:
-            eval_once(test_dataloader, model, save_dir)
+            auroc = eval_once(test_dataloader, model, save_dir, best_auroc)
+            best_auroc = max(auroc, best_auroc)
         if (epoch + 1) % const.CHECKPOINT_INTERVAL == 0:
             torch.save(
                 {
