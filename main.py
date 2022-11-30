@@ -65,10 +65,14 @@ def build_model(config):
     return model
 
 
-def build_optimizer(model):
-    return torch.optim.Adam(
-        model.parameters(), lr=const.LR, weight_decay=const.WEIGHT_DECAY
-    )
+def build_optimizer(params, optim_name="Adam"):
+    if optim_name == "Adam":
+        return torch.optim.Adam(
+            params, lr=const.LR, weight_decay=const.WEIGHT_DECAY
+        )
+    elif optim_name == "SGD":
+        return torch.optim.SGD(params, lr=const.LR, momentum=const.MOMENTUM,
+                               weight_decay=const.WEIGHT_DECAY, nesterov=True)
 
 
 def train_one_epoch(dataloader, model, optimizer, epoch):
@@ -132,7 +136,18 @@ def train(args):
 
     config = yaml.safe_load(open(args.config, "r"))
     model = build_model(config)
-    optimizer = build_optimizer(model)
+
+    features_param_ids = list(map(id, model.feature_extractor.parameters()))
+    fast_flow_params = [p for p in model.parameters() if id(p) not in features_param_ids]
+    param_groups = [
+        {'params': model.feature_extractor.parameters(), 'lr': const.BACKBONE_LR},
+        {'params': fast_flow_params, 'lr': const.LR}
+    ]
+    # optimizer = build_optimizer(model.parameters())
+    optimizer = build_optimizer(param_groups)
+
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, mode='max', factor=0.1, patience=6, verbose=True, threshold=1e-4)
 
     train_dataloader = build_train_data_loader(args, config)
     test_dataloader = build_test_data_loader(args, config)
@@ -143,6 +158,9 @@ def train(args):
     first_change = True
 
     for epoch in range(const.NUM_EPOCHS):
+        print(f"Epoch:{epoch}  backbone_Lr:{optimizer.state_dict()['param_groups'][0]['lr']:.2E}, "
+              f"fast_flow_Lr:{optimizer.state_dict()['param_groups'][1]['lr']:.2E}")
+
         if const.TRAINING_BACKBONE and epoch == const.NUM_EPOCHS // 2 and first_change:
             print(f"-------------------change module learning strategy---------------------")
             model.training_backbone = True
@@ -150,11 +168,11 @@ def train(args):
             first_change = False
 
         train_one_epoch(train_dataloader, model, optimizer, epoch)
-        if (epoch + 1) % const.EVAL_INTERVAL == 0:
-            auroc, f_score_max, threshold_best = eval_once(test_dataloader, model, save_dir, best_auroc)
-            if auroc > best_auroc:
-                best_auroc = auroc
-                best_info = {'auroc': auroc, 'f_score_max': f_score_max, "threshold_best": threshold_best}
+        # if (epoch + 1) % const.EVAL_INTERVAL == 0:
+        auroc, f_score_max, threshold_best = eval_once(test_dataloader, model, save_dir, best_auroc)
+        if auroc > best_auroc:
+            best_auroc = auroc
+            best_info = {'auroc': auroc, 'f_score_max': f_score_max, "threshold_best": threshold_best}
         if (epoch + 1) % const.CHECKPOINT_INTERVAL == 0:
             torch.save(
                 {
@@ -164,6 +182,9 @@ def train(args):
                 },
                 os.path.join(checkpoint_dir, "%d.pt" % epoch),
             )
+        if epoch >= const.NUM_EPOCHS // 2:
+            scheduler.step(auroc)
+
     print(f"best_info: {best_info}")
 
 
