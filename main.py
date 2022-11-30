@@ -1,10 +1,12 @@
 import argparse
 import os
+import sys
 
 import torch
 import yaml
 from ignite.contrib import metrics
 import datetime
+from tools.mylogging import Logger
 
 import constants as const
 import dataset
@@ -106,11 +108,12 @@ def eval_once(dataloader, model, save_dir, best_auroc=0.0):
     # auroc = auroc_metric.compute()
 
     auroc, f_score_max, threshold_best = get_best_thredhold(model, dataloader)
+
     if auroc > best_auroc:
         visualize_heatmap(model, dataloader, save_dir, threshold_best)
 
     # print("AUROC: {}".format(auroc))
-    return auroc
+    return auroc, f_score_max, threshold_best
 
 
 def train(args):
@@ -124,6 +127,8 @@ def train(args):
     save_dir = os.path.join(
         const.SAVE_DIR, f"exp{len(os.listdir(const.SAVE_DIR))}_{args.category}_{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
     )
+    # Redirect print to both console and logs file
+    sys.stdout = Logger(os.path.join(save_dir,  'logs.txt'))
 
     config = yaml.safe_load(open(args.config, "r"))
     model = build_model(config)
@@ -133,12 +138,23 @@ def train(args):
     test_dataloader = build_test_data_loader(args, config)
     model.cuda()
     best_auroc = 0.0
+    best_info = {}
+
+    first_change = True
 
     for epoch in range(const.NUM_EPOCHS):
+        if const.TRAINING_BACKBONE and epoch == const.NUM_EPOCHS // 2 and first_change:
+            print(f"-------------------change module learning strategy---------------------")
+            model.training_backbone = True
+            model.change_params_requires_grad()
+            first_change = False
+
         train_one_epoch(train_dataloader, model, optimizer, epoch)
         if (epoch + 1) % const.EVAL_INTERVAL == 0:
-            auroc = eval_once(test_dataloader, model, save_dir, best_auroc)
-            best_auroc = max(auroc, best_auroc)
+            auroc, f_score_max, threshold_best = eval_once(test_dataloader, model, save_dir, best_auroc)
+            if auroc > best_auroc:
+                best_auroc = auroc
+                best_info = {'auroc': auroc, 'f_score_max': f_score_max, "threshold_best": threshold_best}
         if (epoch + 1) % const.CHECKPOINT_INTERVAL == 0:
             torch.save(
                 {
@@ -148,6 +164,7 @@ def train(args):
                 },
                 os.path.join(checkpoint_dir, "%d.pt" % epoch),
             )
+    print(f"best_info: {best_info}")
 
 
 def evaluate(args):

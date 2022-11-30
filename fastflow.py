@@ -44,7 +44,9 @@ class FastFlow(nn.Module):
         input_size,
         conv3x3_only=False,
         hidden_ratio=1.0,
+        training_backbone=False
     ):
+        self.training_backbone = training_backbone
         super(FastFlow, self).__init__()
         assert (
             backbone_name in const.SUPPORTED_BACKBONES
@@ -75,9 +77,6 @@ class FastFlow(nn.Module):
                     )
                 )
 
-        for param in self.feature_extractor.parameters():
-            param.requires_grad = False
-
         self.nf_flows = nn.ModuleList()
         for in_channels, scale in zip(channels, scales):
             self.nf_flows.append(
@@ -90,8 +89,35 @@ class FastFlow(nn.Module):
             )
         self.input_size = input_size
 
+        if training_backbone:
+            for param in self.nf_flows.parameters():
+                param.requires_grad = False
+        else:
+            for param in self.feature_extractor.parameters():
+                param.requires_grad = False
+
+    def change_params_requires_grad(self):
+        if self.training_backbone:
+            for param in self.feature_extractor.parameters():
+                param.requires_grad = True
+            for param in self.nf_flows.parameters():
+                # param.requires_grad = False
+                param.requires_grad = True
+        else:
+            for param in self.feature_extractor.parameters():
+                param.requires_grad = False
+            for param in self.nf_flows.parameters():
+                param.requires_grad = True
+
     def forward(self, x):
-        self.feature_extractor.eval()
+        if self.training_backbone:
+            # self.nf_flows.eval()
+            self.nf_flows.train()
+            self.feature_extractor.train()
+        else:
+            self.feature_extractor.eval()
+            self.nf_flows.train()
+
         if isinstance(
             self.feature_extractor, timm.models.vision_transformer.VisionTransformer
         ):
