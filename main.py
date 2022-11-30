@@ -161,7 +161,7 @@ def train(args):
         print(f"Epoch:{epoch}  backbone_Lr:{optimizer.state_dict()['param_groups'][0]['lr']:.2E}, "
               f"fast_flow_Lr:{optimizer.state_dict()['param_groups'][1]['lr']:.2E}")
 
-        if const.TRAINING_BACKBONE and epoch == const.NUM_EPOCHS // 2 and first_change:
+        if const.TRAINING_BACKBONE and epoch >= 50 and first_change:
             print(f"-------------------change module learning strategy---------------------")
             model.training_backbone = True
             model.change_params_requires_grad()
@@ -182,7 +182,7 @@ def train(args):
                 },
                 os.path.join(checkpoint_dir, "%d.pt" % epoch),
             )
-        if epoch >= const.NUM_EPOCHS // 2:
+        if epoch >= 50:
             scheduler.step(auroc)
 
     print(f"best_info: {best_info}")
@@ -216,7 +216,7 @@ def parse_args():
     parser.add_argument(
         "-cat",
         "--category",
-        default='amz_1_down',
+        default='amazon_multi',
         type=str,
         choices=const.MVTEC_CATEGORIES,
         # required=True,
