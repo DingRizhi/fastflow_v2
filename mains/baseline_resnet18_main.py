@@ -1,40 +1,52 @@
 import os
 
-from dataloader.watch_data import WatchData
+from dataloader.classify_dataset import ClassifyDataset
+import datetime
 from torch.utils.data import DataLoader
-import models_iPanda50
+import constants as const
+
 import torch.nn as nn
 import torch
 import time
-# import visdom
 from tools.mylogging import Logger
 import sys
-import numpy as np
+from models.backbone_resnet18 import Resnet18
+from models.focal_loss import FocalLoss
 from torchvision import transforms
-import evaluate
+
 from torch.optim import lr_scheduler
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def main(**kwargs):
+    datetime_str = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')
+    project_checkpoint_dir = os.path.join(project_dir, const.CHECKPOINT_DIR)
+    if not os.path.exists(project_checkpoint_dir):
+        os.mkdir(project_checkpoint_dir)
+    checkpoint_dir = os.path.join(
+        project_checkpoint_dir, f"exp{len(os.listdir(project_checkpoint_dir))}_resnet18_{datetime_str}"
+    )
+    os.makedirs(checkpoint_dir, exist_ok=True)
 
-    # create model save dir
-    logs_dir = os.path.join(opt.logs_dir, opt.timestamp)
-    if not os.path.exists(logs_dir):
-        os.mkdir(logs_dir)
+    project_save_dir = os.path.join(project_dir, const.SAVE_DIR)
+    if not os.path.exists(project_save_dir):
+        os.mkdir(project_save_dir)
+    save_dir = os.path.join(
+        project_save_dir,
+        f"exp{len(os.listdir(project_checkpoint_dir))}_resnet18_{datetime_str}"
+    )
+    os.makedirs(save_dir, exist_ok=True)
 
-    # Redirect print to both console and logs file
-    sys.stdout = Logger(os.path.join(logs_dir, opt.data_name+'_logs.txt'))
-
-    opt._parse(kwargs)
+    sys.stdout = Logger(os.path.join(save_dir,  'logs.txt'))
 
     # Create Visdom
     # vis = visdom.Visdom(env=opt.visdom_env)
 
     # Transform
     train_transformer = transforms.Compose([
-        transforms.Resize((opt.size, opt.size), interpolation=3),  # size=opt.height (224, 224)
+        transforms.Resize((256, 256), interpolation=3),  # size=opt.height (224, 224)
         transforms.RandomHorizontalFlip(),
         # transforms.RandomCrop(size=opt.height),
         transforms.ToTensor(),
@@ -43,7 +55,7 @@ def main(**kwargs):
     print('------------train_transformer------------')
     print(train_transformer)
     test_transformer = transforms.Compose([
-        transforms.Resize((opt.size, opt.size), interpolation=3),
+        transforms.Resize((256, 256), interpolation=3),
         # transforms.CenterCrop(size=opt.height),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
@@ -52,23 +64,25 @@ def main(**kwargs):
     print(test_transformer)
 
     # dataset
-    train_data = WatchData(opt.data_dir, train="train", transform=train_transformer)
-    test_data = WatchData(opt.data_dir, train="val", transform=test_transformer)
+    train_data = ClassifyDataset("/home/log/PycharmProjects/fastflow_v2/datasets/classify_data",
+                                 mode="train", transform=train_transformer)
+    test_data = ClassifyDataset("/home/log/PycharmProjects/fastflow_v2/datasets/classify_data",
+                                mode="test", transform=test_transformer)
     num_train_classes = train_data.num_class
 
     # Create data loader
     print('load data')
     train_loader = DataLoader(
-        train_data, batch_size=opt.batch_size, num_workers=opt.num_workers,
+        train_data, batch_size=32, num_workers=4,
         shuffle=True,  pin_memory=True,  # drop_last=True,
     )
     test_lodaer = DataLoader(
-        test_data, batch_size=opt.batch_size, num_workers=opt.num_workers,
+        test_data, batch_size=32, num_workers=4,
         shuffle=False, pin_memory=True,
     )
 
     # Create model
-    model = models_iPanda50.Resnet18(num_train_classes)
+    model = Resnet18(num_train_classes)
     model = nn.DataParallel(model).cuda()
     print('---------------model layers---------------')
     print(model)
@@ -77,17 +91,19 @@ def main(**kwargs):
     # Criterion
     criterion = nn.CrossEntropyLoss()
     # focal loss
-    focal_loss = models_iPanda50.FocalLoss(gamma=2)
+    focal_loss = FocalLoss(gamma=2)
 
     # Optimizer
-    features_param_ids = list(map(id, model.module.base_model.parameters()))
-    new_params = [p for p in model.parameters() if id(p) not in features_param_ids]
-    param_groups = [
-        {'params': model.module.base_model.parameters(), 'lr': 0.01},
-        {'params': new_params, 'lr': 0.1}
-    ]
-    optimizer = torch.optim.SGD(param_groups, lr=opt.lr, momentum=opt.momentum,
-                                weight_decay=opt.weight_decay, nesterov=True)
+    # features_param_ids = list(map(id, model.module.base_model.parameters()))
+    # new_params = [p for p in model.parameters() if id(p) not in features_param_ids]
+    # param_groups = [
+    #     {'params': model.module.base_model.parameters(), 'lr': 0.01},
+    #     {'params': new_params, 'lr': 0.1}
+    # ]
+    # optimizer = torch.optim.SGD(param_groups, lr=opt.lr, momentum=opt.momentum,
+    #                             weight_decay=opt.weight_decay, nesterov=True)
+    optimizer = torch.optim.SGD(model.module.parameters(), lr=0.01, momentum=0.9,
+                                weight_decay=5e-4, nesterov=True)
     # Schedule for learning rate
     scheduler = lr_scheduler.ReduceLROnPlateau(
         optimizer, mode='max', factor=0.1, patience=6, verbose=True, threshold=1e-4)
@@ -99,8 +115,8 @@ def main(**kwargs):
     best_epoch = None
 
     # Start training
-    for epoch in range(opt.num_epochs):
-        print('Epoch {}/{}'.format(epoch + 1, opt.num_epochs))
+    for epoch in range(100):
+        print('Epoch {}/{}'.format(epoch + 1, 100))
 
         model.train(True)
 
@@ -157,20 +173,12 @@ def main(**kwargs):
             best_epoch = epoch + 1
             # save model
             torch.save(model.module.state_dict(),
-                       os.path.join(logs_dir, opt.data_name+'_' + str(epoch+1) + '_model.pth'))
+                       os.path.join(checkpoint_dir, 'epoch_' + str(epoch+1) + '_model.pth'))
 
         if epoch % 10 == 0:
-            torch.save(model.module.state_dict(), os.path.join(logs_dir, 'last_model.pth'))
+            torch.save(model.module.state_dict(), os.path.join(checkpoint_dir, 'last_model.pth'))
 
-        # plot in the visdom
-        # vis.line(X=np.array([epoch]), Y=np.array([epoch_loss]), win='train_loss', opts=dict(title='train_loss'),
-        #          update=None if epoch == 0 else 'append', )
-        # vis.line(X=np.array([epoch]), Y=np.array([train_acc]), win='train_acc', opts=dict(title='train_acc'),
-        #          update=None if epoch == 0 else 'append', )
-        # vis.line(X=np.array([epoch]), Y=np.array([test_acc]), win='test_acc', opts=dict(title='test_acc'),
-        #          update=None if epoch == 0 else 'append', )
 
-    print()
     time_elapsed = time.time() - train_start_time
     print('Experiment complete in {:.0f}m {:.0f}s'.format(
         time_elapsed // 60, time_elapsed % 60
@@ -188,9 +196,6 @@ def _accuracy(model, test_lodaer, use_cuda=True):
         targets = pids.cuda()
 
         outputs = model(inputs)
-        if not isinstance(outputs, tuple):
-            outputs = [outputs]
-        outputs = model.module.outputs(list(outputs) + [opt.landa]) if use_cuda else model.outputs(list(outputs) + [opt.landa])
 
         _, preds = torch.max(outputs.data, 1)
         num_total += pids.size(0)

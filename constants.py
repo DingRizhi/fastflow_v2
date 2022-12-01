@@ -1,5 +1,5 @@
-CHECKPOINT_DIR = "_fastflow_experiment_checkpoints"
-SAVE_DIR = "./_results"
+CHECKPOINT_DIR = "_experiment_checkpoints"
+SAVE_DIR = "_results"
 
 MVTEC_CATEGORIES = [
     "bottle",
