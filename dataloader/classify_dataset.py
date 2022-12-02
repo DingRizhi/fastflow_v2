@@ -17,14 +17,14 @@ class ClassifyDataset(data.Dataset):
 
         self.images = []
         for class_name in self.class_names:
-            image_dir = os.path.join(root, class_name, mode, "good")
+            image_dir = os.path.join(root, class_name, mode)
             self.images += glob.glob(f"{image_dir}/*.png")
 
     def __getitem__(self, item):
 
         image_path = self.images[item]
         image_name = os.path.basename(image_path)
-        class_name = image_path.rsplit("/", 4)[-4]
+        class_name = image_path.rsplit("/", 3)[-3]
         class_id = self.class_name_id_dict[class_name]
 
         image = Image.open(image_path)
@@ -61,4 +61,4 @@ def eval_dataset(data_dir, train):
 
 # ----------------------------------------------------
 if __name__ == '__main__':
-    eval_dataset("/home/log/PycharmProjects/fastflow_v2/datasets/classify_data", "train")
+    eval_dataset("/home/log/PycharmProjects/fastflow_v2/datasets/classify_data_multi", "train")

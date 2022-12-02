@@ -11,10 +11,13 @@ from tools.mylogging import Logger
 import constants as const
 import dataset
 import fastflow
+from models.backbone_resnet18 import Resnet18
 import utils
 
 from postprocessing.caculate import get_best_thredhold
 from postprocessing.plot import visualize_heatmap
+
+project_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 def build_train_data_loader(args, config):
@@ -97,7 +100,7 @@ def train_one_epoch(dataloader, model, optimizer, epoch):
             )
 
 
-def eval_once(dataloader, model, save_dir, best_auroc=0.0):
+def eval_once(dataloader, model, save_dir, best_auroc=0.0, epotch=None):
 
     model.eval()
     # auroc_metric = metrics.ROC_AUC()
@@ -114,40 +117,58 @@ def eval_once(dataloader, model, save_dir, best_auroc=0.0):
     auroc, f_score_max, threshold_best = get_best_thredhold(model, dataloader)
 
     if auroc > best_auroc:
-        visualize_heatmap(model, dataloader, save_dir, threshold_best)
+        if epotch is None:
+            visualize_heatmap(model, dataloader, save_dir, threshold_best)
+        elif epotch >= 75 and epotch % 5 == 0:
+            visualize_heatmap(model, dataloader, save_dir, threshold_best)
 
     # print("AUROC: {}".format(auroc))
     return auroc, f_score_max, threshold_best
 
 
 def train(args):
-    os.makedirs(const.CHECKPOINT_DIR, exist_ok=True)
+    datetime_str = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')
+    project_checkpoint_dir = os.path.join(project_dir, const.CHECKPOINT_DIR)
+    os.makedirs(project_checkpoint_dir, exist_ok=True)
     checkpoint_dir = os.path.join(
-        const.CHECKPOINT_DIR, "exp%d" % len(os.listdir(const.CHECKPOINT_DIR))
+        project_checkpoint_dir, f"exp{len(os.listdir(project_checkpoint_dir))}_{args.category}_{datetime_str}"
     )
     os.makedirs(checkpoint_dir, exist_ok=True)
 
-    os.makedirs(const.SAVE_DIR, exist_ok=True)
+    project_save_dir = os.path.join(project_dir, const.SAVE_DIR)
+    os.makedirs(project_save_dir, exist_ok=True)
     save_dir = os.path.join(
-        const.SAVE_DIR, f"exp{len(os.listdir(const.SAVE_DIR))}_{args.category}_{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
+        project_save_dir, f"exp{len(os.listdir(project_checkpoint_dir))}_{args.category}_{datetime_str}"
     )
     # Redirect print to both console and logs file
     sys.stdout = Logger(os.path.join(save_dir,  'logs.txt'))
 
     config = yaml.safe_load(open(args.config, "r"))
-    model = build_model(config)
 
-    features_param_ids = list(map(id, model.feature_extractor.parameters()))
-    fast_flow_params = [p for p in model.parameters() if id(p) not in features_param_ids]
-    param_groups = [
-        {'params': model.feature_extractor.parameters(), 'lr': const.BACKBONE_LR},
-        {'params': fast_flow_params, 'lr': const.LR}
-    ]
-    # optimizer = build_optimizer(model.parameters())
-    optimizer = build_optimizer(param_groups)
+    model = build_model(config)
+    if const.LOAD_PRETRAINED_BACKBONE:
+        # device = torch.device('cuda:0')
+        # backbone = Resnet18(4)
+        pretrained_backbone = torch.load(const.PRETRAINED_BACKBONE_PTH)
+        model_dict = model.state_dict()
+        state_dict = {k: v for k, v in pretrained_backbone.items() if k in model_dict.keys()}
+        print(state_dict.keys())
+        model_dict.update(state_dict)
+        model.load_state_dict(model_dict)
+        model.training_backbone = False
+        model.change_params_requires_grad()
+
+    # features_param_ids = list(map(id, model.feature_extractor.parameters()))
+    # fast_flow_params = [p for p in model.parameters() if id(p) not in features_param_ids]
+    # param_groups = [
+    #     {'params': model.feature_extractor.parameters(), 'lr': const.BACKBONE_LR},
+    #     {'params': fast_flow_params, 'lr': const.LR}
+    # ]
+    optimizer = build_optimizer(model.parameters())
+    # optimizer = build_optimizer(param_groups)
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode='max', factor=0.1, patience=6, verbose=True, threshold=1e-4)
+        optimizer, mode='max', factor=0.1, patience=4, verbose=True, threshold=1e-4)
 
     train_dataloader = build_train_data_loader(args, config)
     test_dataloader = build_test_data_loader(args, config)
@@ -158,8 +179,9 @@ def train(args):
     first_change = True
 
     for epoch in range(const.NUM_EPOCHS):
-        print(f"Epoch:{epoch}  backbone_Lr:{optimizer.state_dict()['param_groups'][0]['lr']:.2E}, "
-              f"fast_flow_Lr:{optimizer.state_dict()['param_groups'][1]['lr']:.2E}")
+        if len(optimizer.state_dict()['param_groups']) > 1:
+            print(f"Epoch:{epoch}  backbone_Lr:{optimizer.state_dict()['param_groups'][0]['lr']:.2E}, "
+                  f"fast_flow_Lr:{optimizer.state_dict()['param_groups'][1]['lr']:.2E}")
 
         if const.TRAINING_BACKBONE and epoch >= 50 and first_change:
             print(f"-------------------change module learning strategy---------------------")
@@ -169,7 +191,7 @@ def train(args):
 
         train_one_epoch(train_dataloader, model, optimizer, epoch)
         # if (epoch + 1) % const.EVAL_INTERVAL == 0:
-        auroc, f_score_max, threshold_best = eval_once(test_dataloader, model, save_dir, best_auroc)
+        auroc, f_score_max, threshold_best = eval_once(test_dataloader, model, save_dir, best_auroc, epoch)
         if auroc > best_auroc:
             best_auroc = auroc
             best_info = {'auroc': auroc, 'f_score_max': f_score_max, "threshold_best": threshold_best}
@@ -182,7 +204,7 @@ def train(args):
                 },
                 os.path.join(checkpoint_dir, "%d.pt" % epoch),
             )
-        if epoch >= 50:
+        if epoch >= const.SCHEDULER_EPOTCH:
             scheduler.step(auroc)
 
     print(f"best_info: {best_info}")
@@ -216,7 +238,7 @@ def parse_args():
     parser.add_argument(
         "-cat",
         "--category",
-        default='amazon_multi',
+        default='loutong_manual_split',
         type=str,
         choices=const.MVTEC_CATEGORIES,
         # required=True,
