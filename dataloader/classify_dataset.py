@@ -18,7 +18,7 @@ class ClassifyDataset(data.Dataset):
         self.images = []
         for class_name in self.class_names:
             image_dir = os.path.join(root, class_name, mode)
-            self.images += glob.glob(f"{image_dir}/*.png")
+            self.images += glob.glob(f"{image_dir}/*g")
 
     def __getitem__(self, item):
 

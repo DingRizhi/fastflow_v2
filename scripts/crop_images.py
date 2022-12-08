@@ -24,14 +24,14 @@ def crop_images(img_dir, save_dir):
         img_4.save(os.path.join(save_dir, f"{image_pure_name}_3.jpg"))
 
 
-def crop_images_in_labelme_images(img_dir, save_dir, good_dir_name="defect_good"):
+def crop_images_in_labelme_images(img_dir, save_dir, label_name_list=["fapian"]):
     image_path_list = glob.glob(f"{img_dir}/*.jpg")
-    good_dir = os.path.join(save_dir, good_dir_name)
-    if not os.path.exists(good_dir):
-        os.mkdir(good_dir)
-    bad_dir = os.path.join(save_dir, "defect_bad")
-    if not os.path.exists(bad_dir):
-        os.mkdir(bad_dir)
+    # good_dir = os.path.join(save_dir, good_dir_name)
+    # if not os.path.exists(good_dir):
+    #     os.mkdir(good_dir)
+    # bad_dir = os.path.join(save_dir, "defect_bad")
+    # if not os.path.exists(bad_dir):
+    #     os.mkdir(bad_dir)
 
     for image_path in image_path_list:
         print(image_path)
@@ -56,15 +56,13 @@ def crop_images_in_labelme_images(img_dir, save_dir, good_dir_name="defect_good"
                     )
                 print(x1, y1, x2, y2)
                 img_ = image.crop((x1, y1, x2, y2))
-                if label == "good":
-                    img_.save(os.path.join(good_dir, f"{image_pure_name}_{index}.jpg"))
-                elif label == "bad":
-                    img_.save(os.path.join(bad_dir, f"{image_pure_name}_{index}.jpg"))
+                if label in label_name_list:
+                    img_.save(os.path.join(save_dir, f"{image_pure_name}.jpg"))
 
 
 if __name__ == '__main__':
-    crop_images("/home/log/PycharmProjects/fastflow_v2/datasets/MVTec/loutong_base/train/good",
-                "/home/log/PycharmProjects/fastflow_v2/datasets/MVTec/luotong_4_split/train/good")
+    crop_images_in_labelme_images("/home/log/PycharmProjects/fastflow_v2/datasets/MVTec/dingzi_side_data/test/defect",
+                                  "/home/log/PycharmProjects/fastflow_v2/datasets/MVTec/dingzi_side_data_crop/test/defect")
 
     # crop_images_in_labelme_images("/home/log/PycharmProjects/fastflow_v2/datasets/MVTec/loutong_test_original/defect",
     #                               "/home/log/PycharmProjects/fastflow_v2/datasets/MVTec/loutong_test_original/")

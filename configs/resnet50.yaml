@@ -1,7 +1,7 @@
 input_size: 256
 input_width: 256
 input_height: 256
-backbone_name: resnet18
+backbone_name: resnet50
 flow_step: 8
 hidden_ratio: 1.0
 conv3x3_only: True

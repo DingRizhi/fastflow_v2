@@ -164,14 +164,14 @@ def train(args):
         model.training_backbone = False
         model.change_params_requires_grad()
 
-    features_param_ids = list(map(id, model.feature_extractor.parameters()))
-    fast_flow_params = [p for p in model.parameters() if id(p) not in features_param_ids]
-    param_groups = [
-        {'params': model.feature_extractor.parameters(), 'lr': const.BACKBONE_LR},
-        {'params': fast_flow_params, 'lr': const.LR}
-    ]
-    # optimizer = build_optimizer(model.parameters())
-    optimizer = build_optimizer(param_groups)
+    # features_param_ids = list(map(id, model.feature_extractor.parameters()))
+    # fast_flow_params = [p for p in model.parameters() if id(p) not in features_param_ids]
+    # param_groups = [
+    #     {'params': model.feature_extractor.parameters(), 'lr': const.BACKBONE_LR},
+    #     {'params': fast_flow_params, 'lr': const.LR}
+    # ]
+    optimizer = build_optimizer(model.parameters())
+    # optimizer = build_optimizer(param_groups)
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, mode='max', factor=0.1, patience=4, verbose=True, threshold=1e-4)
@@ -236,7 +236,7 @@ def evaluate(args):
 def parse_args():
     parser = argparse.ArgumentParser(description="Train FastFlow on MVTec-AD dataset")
     parser.add_argument(
-        "-cfg", "--config", default='configs/resnet50.yaml', type=str,  help="path to config file",  # required=True,
+        "-cfg", "--config", default='configs/resnet18.yaml', type=str,  help="path to config file",  # required=True,
     )
     parser.add_argument("--data", type=str, default='datasets/MVTec', help="path to mvtec folder",
                         # required=True,
@@ -246,7 +246,7 @@ def parse_args():
         "--category",
         default='dingzi_side_data',
         type=str,
-        # choices=const.MVTEC_CATEGORIES,
+        choices=const.MVTEC_CATEGORIES,
         # required=True,
         help="category name in mvtec",
     )

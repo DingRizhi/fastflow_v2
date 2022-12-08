@@ -10,7 +10,7 @@ import torch
 import time
 from tools.mylogging import Logger
 import sys
-from models.backbone_resnet18 import Resnet18
+from models.backbone_resnet50 import Resnet50
 from models.focal_loss import FocalLoss
 from torchvision import transforms
 
@@ -35,7 +35,7 @@ def main(**kwargs):
         os.mkdir(project_save_dir)
     save_dir = os.path.join(
         project_save_dir,
-        f"exp{len(os.listdir(project_checkpoint_dir))}_resnet18_{datetime_str}"
+        f"exp{len(os.listdir(project_checkpoint_dir))}_resnet50_{datetime_str}"
     )
     os.makedirs(save_dir, exist_ok=True)
 
@@ -64,9 +64,9 @@ def main(**kwargs):
     print(test_transformer)
 
     # dataset
-    train_data = ClassifyDataset("/home/log/PycharmProjects/fastflow_v2/datasets/classify_dingzi_v2",
+    train_data = ClassifyDataset("/home/log/PycharmProjects/fastflow_v2/datasets/classify_dingzi",
                                  mode="train", transform=train_transformer)
-    test_data = ClassifyDataset("/home/log/PycharmProjects/fastflow_v2/datasets/classify_dingzi_v2",
+    test_data = ClassifyDataset("/home/log/PycharmProjects/fastflow_v2/datasets/classify_dingzi",
                                 mode="test", transform=test_transformer)
     num_train_classes = train_data.num_class
 
@@ -82,7 +82,7 @@ def main(**kwargs):
     )
 
     # Create model
-    model = Resnet18(num_train_classes)
+    model = Resnet50(num_train_classes)
     model = nn.DataParallel(model).cuda()
     print('---------------model layers---------------')
     print(model)

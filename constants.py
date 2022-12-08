@@ -5,18 +5,22 @@ MVTEC_CATEGORIES = [
     "bottle",
     "amz_1_down",
     "amz_1_right",
+    "dingzi_side_data",
+    "dingzi_side_clear_data"
 ]
 
 BACKBONE_DEIT = "deit_base_distilled_patch16_384"
 BACKBONE_CAIT = "cait_m48_448"
 BACKBONE_RESNET18 = "resnet18"
 BACKBONE_WIDE_RESNET50 = "wide_resnet50_2"
+BACKBONE_RESNET50 = "resnet50"
 
 SUPPORTED_BACKBONES = [
     BACKBONE_DEIT,
     BACKBONE_CAIT,
     BACKBONE_RESNET18,
     BACKBONE_WIDE_RESNET50,
+    BACKBONE_RESNET50,
 ]
 
 BATCH_SIZE = 32
@@ -32,8 +36,11 @@ CHECKPOINT_INTERVAL = 10
 
 TRAINING_BACKBONE = False
 
-LOAD_PRETRAINED_BACKBONE = False
-PRETRAINED_BACKBONE_PTH = "/home/log/PycharmProjects/fastflow_v2/_experiment_checkpoints/exp11_resnet18_2022-12-01-11-43/last_model.pth"
+LOAD_PRETRAINED_BACKBONE = True
+# PRETRAINED_BACKBONE_PTH = "/home/log/PycharmProjects/fastflow_v2/_experiment_checkpoints/exp43_resnet18_2022-12-07-10-46/epoch_49_model.pth"
+# PRETRAINED_BACKBONE_PTH = "/home/log/PycharmProjects/fastflow_v2/_experiment_checkpoints/exp42_resnet18_2022-12-07-10-29/epoch_6_model.pth"
+# PRETRAINED_BACKBONE_PTH = "/home/log/PycharmProjects/fastflow_v2/_experiment_checkpoints/exp49_resnet18_2022-12-07-15-33/epoch_37_model.pth"
+PRETRAINED_BACKBONE_PTH = "/home/log/PycharmProjects/fastflow_v2/_experiment_checkpoints/exp63_resnet18_2022-12-08-10-39/epoch_64_model.pth"
 
 SCHEDULER_EPOTCH = 5
 

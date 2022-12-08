@@ -88,12 +88,16 @@ def generate_image(anomaly_map, image, label, anomaly_score, n_batch, n_iter, sa
     anomaly_map_add = cv2.cvtColor(anomaly_map_add, cv2.COLOR_BGR2RGB)
     superimposed_map = cv2.addWeighted(anomaly_map_add, alpha, image_add, (1 - alpha), gamma)
 
+    result_name = None
+
     if anomaly_score > threshold:  # Normal
         # superimposed_map = add_normal_label(superimposed_map, round(anomaly_score, 3))
         superimposed_map = add_normal_label(superimposed_map, round(anomaly_score, 3))
+        result_name = "Normal"
     else:
         # superimposed_map = add_anomalous_label(superimposed_map, 1-round(anomaly_score, 3))
         superimposed_map = add_anomalous_label(superimposed_map, round(anomaly_score, 3))
+        result_name = "Anomaly"
 
     if label == 1:
         check = "Normal"
@@ -113,10 +117,15 @@ def generate_image(anomaly_map, image, label, anomaly_score, n_batch, n_iter, sa
     plt.close()
     os.makedirs(save_dir, exist_ok=True)
     fig.savefig(os.path.join(save_dir, 'img_' + str(n_iter) + '_' + str(n_batch) + '_' + check + '.png'))
+    return result_name
 
 
 def visualize_heatmap(model, dataloader, save_dir, threshold):
-
+    normal_gt_num = 0
+    normal_correct_num = 0
+    anomaly_gt_num = 0
+    anomaly_correct_num = 0
+    total_num = 0
     for n_iter, (data, labels) in enumerate(dataloader):
         data = data.cuda()
         with torch.no_grad():
@@ -127,7 +136,19 @@ def visualize_heatmap(model, dataloader, save_dir, threshold):
 
         for n_batch, (anomaly_map, image, label) in enumerate(zip(outputs, inputs, labels)):
             score = predict_anomaly_score(anomaly_map)
-            generate_image(anomaly_map, image, label, score,
+            result_name = generate_image(anomaly_map, image, label, score,
                            n_batch, n_iter, save_dir, threshold)
 
+            total_num += 1
+            if int(label) == 1:
+                normal_gt_num += 1
+                if result_name == "Normal":
+                    normal_correct_num += 1
+            elif int(label) == 0:
+                anomaly_gt_num += 1
+                if result_name == "Anomaly":
+                    anomaly_correct_num += 1
+    print(f"evl result: \ntotal_num={total_num}, normal_accuracy={normal_correct_num}/{normal_gt_num}="
+          f"{normal_correct_num/normal_gt_num}, "
+          f"anomaly_accuracy={anomaly_correct_num}/{anomaly_gt_num}={anomaly_correct_num/anomaly_gt_num}")
 
