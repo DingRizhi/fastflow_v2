@@ -57,18 +57,18 @@ class labelme2coco(object):
 
     def image(self, data, num):
         image = {}
-        img = utils.img_b64_to_arr(data['imageData'])  # 解析原图片数据
+        # img = utils.img_b64_to_arr(data['imageData'])  # 解析原图片数据
         # img=io.imread(data['imagePath']) # 通过图片路径打开图片
         # img = cv2.imread(data['imagePath'], 0)
-        height, width = img.shape[:2]
+        # height, width = img.shape[:2]
         img = None
-        image['height'] = height
-        image['width'] = width
+        # image['height'] = height
+        # image['width'] = width
         image['id'] = num + 1
         image['file_name'] = data['imagePath'].split('/')[-1]
 
-        self.height = height
-        self.width = width
+        # self.height = height
+        # self.width = width
 
         return image
 
@@ -81,12 +81,14 @@ class labelme2coco(object):
 
     def annotation(self, points, label, num):
         annotation = {}
-        annotation['segmentation'] = [list(np.asarray(points).flatten())]
+        # annotation['segmentation'] = [list(np.asarray(points).flatten())]
         annotation['iscrowd'] = 0
         annotation['image_id'] = num + 1
         # annotation['bbox'] = str(self.getbbox(points)) # 使用list保存json文件时报错（不知道为什么）
         # list(map(int,a[1:-1].split(','))) a=annotation['bbox'] 使用该方式转成list
-        annotation['bbox'] = list(map(float, self.getbbox(points)))
+        # annotation['bbox'] = list(map(float, self.getbbox(points)))
+        annotation['bbox'] = list(map(float, [points[0][0], points[0][1], points[1][0] - points[0][0],
+                                              points[1][1] - points[0][1]]))
         annotation['area'] = annotation['bbox'][2] * annotation['bbox'][3]
         # annotation['category_id'] = self.getcatid(label)
         annotation['category_id'] = self.getcatid(label)  # 注意，源代码默认为1
@@ -153,7 +155,7 @@ class labelme2coco(object):
         json.dump(self.data_coco, open(self.save_json_path, 'w'), indent=4, cls=MyEncoder)  # indent=4 更加美观显示
 
 
-labelme_json = glob.glob(r'H:/cv/code/mmdetection/data/coco/seam/val2014/*.json')
+labelme_json = glob.glob('/home/log/PycharmProjects/new-YOLOv1_PyTorch/data/scripts/COCO/person_coco/val2017/*.json')
 # labelme_json=['./1.json']
 
-labelme2coco(labelme_json, '.\\instances_val2015.json')
+labelme2coco(labelme_json, '/home/log/PycharmProjects/new-YOLOv1_PyTorch/data/scripts/COCO/person_coco/annotations/instances_val2017.json')

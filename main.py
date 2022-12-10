@@ -236,15 +236,15 @@ def evaluate(args):
 def parse_args():
     parser = argparse.ArgumentParser(description="Train FastFlow on MVTec-AD dataset")
     parser.add_argument(
-        "-cfg", "--config", default='configs/resnet50.yaml', type=str,  help="path to config file",  # required=True,
+        "-cfg", "--config", default='configs/resnet18.yaml', type=str,  help="path to config file",  # required=True,
     )
-    parser.add_argument("--data", type=str, default='datasets/MVTec', help="path to mvtec folder",
+    parser.add_argument("--data", type=str, default='/data/BYD_dingzi/dataset', help="path to mvtec folder",
                         # required=True,
                         )
     parser.add_argument(
         "-cat",
         "--category",
-        default='dingzi_side_data',
+        default='duanziqiliu',
         type=str,
         # choices=const.MVTEC_CATEGORIES,
         # required=True,

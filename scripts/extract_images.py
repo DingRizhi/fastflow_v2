@@ -20,13 +20,13 @@ def copy_images(img_path_list, mode, save_dir):
     for image_path in img_path_list:
         image_base_name = os.path.basename(image_path)
         img_good_dir = os.path.join(save_dir, mode, "good")
-        if not os.path.exists(img_good_dir):
-            os.mkdir(img_good_dir)
+
+        os.makedirs(img_good_dir, exist_ok=True)
 
         shutil.copyfile(image_path, os.path.join(img_good_dir, image_base_name))
 
 
-def split_data(original_img_dir, data_dir, test_good_num=1):
+def split_data(original_img_dir, data_dir, test_good_num=4):
     image_path_list = glob.glob(f"{original_img_dir}/*.jpg")
 
     platform_id_count_dict = {}
@@ -55,8 +55,11 @@ def split_data(original_img_dir, data_dir, test_good_num=1):
 
 
 if __name__ == '__main__':
+    # extract_images_by_platform_ids("/data/BYD_dingzi/12个产品良品图", "/data/BYD_dingzi/dataset/duanziqiliu/good",
+    #                                [94, 140, 141])
+
     # extract_images_by_platform_ids("/data/异常检测/20221206_good", "/data/异常检测/side_images/original",
     #                                [20, 23, 24, 26, 27, 30, 31, 33, 34, 36, 39, 60, 63, 64, 66, 67, 70,
     #                                 71, 73, 74, 76, 79, 103, 104, 106, 107, 110, 111, 113, 114, 116])
 
-    split_data("/data/异常检测/side_images/original", "/data/异常检测/side_images/dingzi_side_data")
+    split_data("/data/BYD_dingzi/dataset/duanziqiliu/good", "/data/BYD_dingzi/dataset/duanziqiliu")
