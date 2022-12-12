@@ -245,7 +245,7 @@ def parse_args():
         "-cat",
         "--category",
         # default='duanziqiliui_crop_v2',
-        default='duanziqiliui_crop_141',
+        default='duanziqiliu_crop_94_v2',
         type=str,
         # choices=const.MVTEC_CATEGORIES,
         # required=True,

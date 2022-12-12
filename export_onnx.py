@@ -7,11 +7,11 @@ from postprocessing.caculate import predict_anomaly_score
 from postprocessing.plot import generate_image
 
 
-def convert_to_onnx(config_path, model_pth, output_path):
+def convert_to_torchscript(config_path, model_pth, output_path):
     config = yaml.safe_load(open(config_path, "r"))
     # model = build_model(config)
     model = FastFlowSimply("resnet18", 8, [256, 256], True, 1.0)
-    checkpoint = torch.load(model_pth)
+    checkpoint = torch.load(model_pth, map_location=torch.device('cpu'))
     model.load_state_dict(checkpoint["model_state_dict"])
     model.eval()
     dummy_input = torch.autograd.Variable(
@@ -39,7 +39,7 @@ def convert_to_onnx(config_path, model_pth, output_path):
 def eval_export_model(model_path, mode):
     test_dataset = dataset.MVTecDataset(
         root="/data/BYD_dingzi/dataset",
-        category="duanziqiliui_crop_141",
+        category="duanziqiliu_crop_141",
         is_train=False,
         input_h=256,
         input_w=256
@@ -75,8 +75,8 @@ def eval_export_model(model_path, mode):
 
 
 if __name__ == '__main__':
-    # convert_to_onnx("configs/resnet18.yaml",
+    # convert_to_torchscript("configs/resnet18.yaml",
     #                 "_experiment_checkpoints/exp79_duanziqiliui_crop_141_2022-12-10-17-08/199.pt",
-    #                 "_exports/fastflow_1.pth")
+    #                 "_exports/fastflow_2.pth")
 
-    eval_export_model("_exports/fastflow_1.pth", "torchscript")
+    eval_export_model("_exports/fastflow_2.pth", "torchscript")
