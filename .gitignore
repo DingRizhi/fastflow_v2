@@ -6,3 +6,6 @@ _fastflow_experiment_checkpoints/
 
 _results/
 /datasets/
+/_experiment_checkpoints/
+/_exports/
+

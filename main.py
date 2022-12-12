@@ -244,7 +244,8 @@ def parse_args():
     parser.add_argument(
         "-cat",
         "--category",
-        default='duanziqiliu',
+        # default='duanziqiliui_crop_v2',
+        default='duanziqiliui_crop_141',
         type=str,
         # choices=const.MVTEC_CATEGORIES,
         # required=True,

@@ -64,9 +64,9 @@ def main(**kwargs):
     print(test_transformer)
 
     # dataset
-    train_data = ClassifyDataset("/home/log/PycharmProjects/fastflow_v2/datasets/classify_dingzi_v2",
+    train_data = ClassifyDataset("/home/log/PycharmProjects/fastflow_v2/datasets/classify_dingzi_v3",
                                  mode="train", transform=train_transformer)
-    test_data = ClassifyDataset("/home/log/PycharmProjects/fastflow_v2/datasets/classify_dingzi_v2",
+    test_data = ClassifyDataset("/home/log/PycharmProjects/fastflow_v2/datasets/classify_dingzi_v3",
                                 mode="test", transform=test_transformer)
     num_train_classes = train_data.num_class
 

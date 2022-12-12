@@ -3,6 +3,7 @@ from ignite.contrib import metrics
 from sklearn.metrics import roc_auc_score
 import torch
 
+
 def predict_anomaly_score(anomaly_map):
 
     anomaly_map_x = anomaly_map.squeeze()

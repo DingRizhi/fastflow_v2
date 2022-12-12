@@ -37,7 +37,6 @@ def split_anomaly_data(data_dir, save_root, val_num):
     copy_images(val_list, "test/good", save_root)
 
 
-
 if __name__ == '__main__':
     split_anomaly_data("/data/BYD_dingzi/dataset/duanziqiliui_crop_v2/good",
                        "/data/BYD_dingzi/dataset/duanziqiliui_crop_v2", 30)
