@@ -51,9 +51,9 @@ def eval_export_model(model_path, mode):
         num_workers=0,
         drop_last=False,
     )
-    dummy_input = torch.autograd.Variable(
-        torch.randn(1, 3, 256, 256)
-    )
+    # dummy_input = torch.autograd.Variable(
+    #     torch.randn(1, 3, 256, 256)
+    # )
     jit_model = None
     if mode == "torchscript":
         jit_model = torch.jit.load(model_path)
