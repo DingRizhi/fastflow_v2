@@ -69,7 +69,7 @@ def eval_export_model(model_path, mode):
         for n_batch, (anomaly_map, image, label) in enumerate(zip(outputs, inputs, labels)):
             score = predict_anomaly_score(anomaly_map)
             result_name = generate_image(anomaly_map, image, label, score,
-                           n_batch, n_iter, "_exports", 0.776)
+                                         n_batch, n_iter, "../_exports", 0.776)
             print(result_name)
         break
 
@@ -79,4 +79,4 @@ if __name__ == '__main__':
     #                 "_experiment_checkpoints/exp79_duanziqiliui_crop_141_2022-12-10-17-08/199.pt",
     #                 "_exports/fastflow_2.pth")
 
-    eval_export_model("_exports/fastflow_2.pth", "torchscript")
+    eval_export_model("../_exports/fastflow_2.pth", "torchscript")

@@ -12,8 +12,11 @@ class ClassifyDataset(data.Dataset):
         self.id_dict = {}
 
         self.class_names = os.listdir(root)
+        self.class_names = sorted(self.class_names)
         self.num_class = len(self.class_names)
         self.class_name_id_dict = {c: i for i, c in enumerate(self.class_names)}
+
+        print(self.class_name_id_dict)
 
         self.images = []
         for class_name in self.class_names:

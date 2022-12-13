@@ -1,5 +1,5 @@
 import os
-
+import copy
 from dataloader.classify_dataset import ClassifyDataset
 import datetime
 from torch.utils.data import DataLoader
@@ -25,8 +25,9 @@ def main(**kwargs):
     project_checkpoint_dir = os.path.join(project_dir, const.CHECKPOINT_DIR)
     if not os.path.exists(project_checkpoint_dir):
         os.mkdir(project_checkpoint_dir)
+    exp_dir_index = len(os.listdir(project_checkpoint_dir))
     checkpoint_dir = os.path.join(
-        project_checkpoint_dir, f"exp{len(os.listdir(project_checkpoint_dir))}_resnet18_{datetime_str}"
+        project_checkpoint_dir, f"exp{exp_dir_index}_resnet50_{datetime_str}"
     )
     os.makedirs(checkpoint_dir, exist_ok=True)
 
@@ -35,9 +36,10 @@ def main(**kwargs):
         os.mkdir(project_save_dir)
     save_dir = os.path.join(
         project_save_dir,
-        f"exp{len(os.listdir(project_checkpoint_dir))}_resnet50_{datetime_str}"
+        f"exp{exp_dir_index}_resnet50_{datetime_str}"
     )
     os.makedirs(save_dir, exist_ok=True)
+    print(save_dir)
 
     sys.stdout = Logger(os.path.join(save_dir,  'logs.txt'))
 
@@ -64,9 +66,9 @@ def main(**kwargs):
     print(test_transformer)
 
     # dataset
-    train_data = ClassifyDataset("/home/log/PycharmProjects/fastflow_v2/datasets/classify_dingzi",
+    train_data = ClassifyDataset("/data/BYD_dingzi/dataset/duanziqiliu_crop_classify",
                                  mode="train", transform=train_transformer)
-    test_data = ClassifyDataset("/home/log/PycharmProjects/fastflow_v2/datasets/classify_dingzi",
+    test_data = ClassifyDataset("/data/BYD_dingzi/dataset/duanziqiliu_crop_classify",
                                 mode="test", transform=test_transformer)
     num_train_classes = train_data.num_class
 
@@ -168,7 +170,7 @@ def main(**kwargs):
         scheduler.step(test_acc)
         print('-' * 10)
 
-        if test_acc > best_acc and epoch >= 5:
+        if test_acc >= best_acc and epoch >= 5:
             best_acc = test_acc
             best_epoch = epoch + 1
             # save model
@@ -178,31 +180,54 @@ def main(**kwargs):
         if epoch % 10 == 0:
             torch.save(model.module.state_dict(), os.path.join(checkpoint_dir, 'last_model.pth'))
 
-
     time_elapsed = time.time() - train_start_time
     print('Experiment complete in {:.0f}m {:.0f}s'.format(
         time_elapsed // 60, time_elapsed % 60
     ))
-    print('Best at epoch %d, test accuracy %f' % (best_epoch, best_acc))
+    print(f'Best at epoch {best_epoch}, test accuracy {best_acc}')
 
 
 def _accuracy(model, test_lodaer, use_cuda=True):
     model.train(False)
-    num_correct = 0.0
-    num_total = 0
-    for imgs, pids, img_names in test_lodaer:
+    class_info = {"correct_num": 0, "total_num": 0, "accuracy": 0.0}
+    classes_count_dict = {"all": copy.deepcopy(class_info)}
 
-        inputs = imgs.cuda()
-        targets = pids.cuda()
+    start = time.time()
+    # if model_name == "resnet18_thread":
+    #     _accuracy_resnet18_threshold(model, dataloader)
+    for images, label_ids, img_names in test_lodaer:
+        inputs = images.cuda()
+        targets = label_ids.cuda()
 
+        # outputs = model(inputs)
         outputs = model(inputs)
 
-        _, preds = torch.max(outputs.data, 1)
-        num_total += pids.size(0)
-        num_correct += torch.sum(preds == targets.data)
-    model.train(True)
-    accuracy = 100.0 * num_correct.item() / num_total
-    return accuracy
+        soft_outs = torch.softmax(outputs.data, dim=1)
+        # _, preds = torch.max(outputs_.data, 1)
+        # _, preds = outputs_.data.topk(1, dim=1, largest=True)
+        _, preds = soft_outs.data.topk(1, dim=1, largest=True)
+
+        for index, item_outputs in enumerate(soft_outs):
+            gt_label = targets[index].cpu().numpy()
+            if str(gt_label) not in classes_count_dict:
+                classes_count_dict[str(gt_label)] = copy.deepcopy(class_info)
+
+            classes_count_dict["all"]["total_num"] += 1
+            classes_count_dict[str(gt_label)]["total_num"] += 1
+
+            pred = preds[index].cpu().numpy()
+
+            if pred == gt_label:
+                classes_count_dict["all"]["correct_num"] += 1
+                classes_count_dict[str(gt_label)]["correct_num"] += 1
+
+    end = time.time()
+    print(f"total time cost: {end - start}, avg time: {(end - start) / classes_count_dict['all']['total_num']}")
+
+    for k, v in classes_count_dict.items():
+        v["accuracy"] = v["correct_num"] / v["total_num"]
+        print(f"{k}: {v}")
+    return classes_count_dict["all"]["accuracy"] * 100
 
 
 if __name__ == '__main__':

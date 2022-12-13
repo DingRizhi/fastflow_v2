@@ -15,6 +15,7 @@ from models.focal_loss import FocalLoss
 from torchvision import transforms
 
 from torch.optim import lr_scheduler
+from mains.baseline_resnet50_main import _accuracy
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,8 +26,10 @@ def main(**kwargs):
     project_checkpoint_dir = os.path.join(project_dir, const.CHECKPOINT_DIR)
     if not os.path.exists(project_checkpoint_dir):
         os.mkdir(project_checkpoint_dir)
+
+    exp_dir_index = len(os.listdir(project_checkpoint_dir))
     checkpoint_dir = os.path.join(
-        project_checkpoint_dir, f"exp{len(os.listdir(project_checkpoint_dir))}_resnet18_{datetime_str}"
+        project_checkpoint_dir, f"exp{exp_dir_index}_resnet18_{datetime_str}"
     )
     os.makedirs(checkpoint_dir, exist_ok=True)
 
@@ -35,7 +38,7 @@ def main(**kwargs):
         os.mkdir(project_save_dir)
     save_dir = os.path.join(
         project_save_dir,
-        f"exp{len(os.listdir(project_checkpoint_dir))}_resnet18_{datetime_str}"
+        f"exp{exp_dir_index}_resnet18_{datetime_str}"
     )
     os.makedirs(save_dir, exist_ok=True)
 
@@ -64,9 +67,9 @@ def main(**kwargs):
     print(test_transformer)
 
     # dataset
-    train_data = ClassifyDataset("/home/log/PycharmProjects/fastflow_v2/datasets/classify_dingzi_v3",
+    train_data = ClassifyDataset("/data/BYD_dingzi/dataset/duanziqiliu_crop_classify",
                                  mode="train", transform=train_transformer)
-    test_data = ClassifyDataset("/home/log/PycharmProjects/fastflow_v2/datasets/classify_dingzi_v3",
+    test_data = ClassifyDataset("/data/BYD_dingzi/dataset/duanziqiliu_crop_classify",
                                 mode="test", transform=test_transformer)
     num_train_classes = train_data.num_class
 
@@ -168,7 +171,7 @@ def main(**kwargs):
         scheduler.step(test_acc)
         print('-' * 10)
 
-        if test_acc > best_acc and epoch >= 5:
+        if test_acc >= best_acc and epoch >= 5:
             best_acc = test_acc
             best_epoch = epoch + 1
             # save model
@@ -184,25 +187,6 @@ def main(**kwargs):
         time_elapsed // 60, time_elapsed % 60
     ))
     print('Best at epoch %d, test accuracy %f' % (best_epoch, best_acc))
-
-
-def _accuracy(model, test_lodaer, use_cuda=True):
-    model.train(False)
-    num_correct = 0.0
-    num_total = 0
-    for imgs, pids, img_names in test_lodaer:
-
-        inputs = imgs.cuda()
-        targets = pids.cuda()
-
-        outputs = model(inputs)
-
-        _, preds = torch.max(outputs.data, 1)
-        num_total += pids.size(0)
-        num_correct += torch.sum(preds == targets.data)
-    model.train(True)
-    accuracy = 100.0 * num_correct.item() / num_total
-    return accuracy
 
 
 if __name__ == '__main__':

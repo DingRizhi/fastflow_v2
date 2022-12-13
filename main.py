@@ -136,15 +136,16 @@ def train(args):
     datetime_str = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')
     project_checkpoint_dir = os.path.join(project_dir, const.CHECKPOINT_DIR)
     os.makedirs(project_checkpoint_dir, exist_ok=True)
+    exp_dir_index = len(os.listdir(project_checkpoint_dir))
     checkpoint_dir = os.path.join(
-        project_checkpoint_dir, f"exp{len(os.listdir(project_checkpoint_dir))}_{args.category}_{datetime_str}"
+        project_checkpoint_dir, f"exp{exp_dir_index}_{args.category}_{datetime_str}"
     )
     os.makedirs(checkpoint_dir, exist_ok=True)
 
     project_save_dir = os.path.join(project_dir, const.SAVE_DIR)
     os.makedirs(project_save_dir, exist_ok=True)
     save_dir = os.path.join(
-        project_save_dir, f"exp{len(os.listdir(project_checkpoint_dir))}_{args.category}_{datetime_str}"
+        project_save_dir, f"exp{exp_dir_index}_{args.category}_{datetime_str}"
     )
     # Redirect print to both console and logs file
     sys.stdout = Logger(os.path.join(save_dir,  'logs.txt'))
