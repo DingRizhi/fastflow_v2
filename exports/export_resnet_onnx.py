@@ -23,16 +23,29 @@ def convert_to_resnet_onnx(model_pth, output_path):
     #     # print(jit_model.code)
     #     jit_model.save(output_path)
 
-    torch.onnx.export(
-        model,
-        dummy_input,
-        output_path,
-        verbose=True,
-        keep_initializers_as_inputs=True,
-        # opset_version=15,
-        input_names=["data"],
-        output_names=["output"],
-    )
+    # torch.onnx.export(
+    #     model,
+    #     dummy_input,
+    #     output_path,
+    #     verbose=True,
+    #     keep_initializers_as_inputs=True,
+    #     # opset_version=15,
+    #     input_names=["data"],
+    #     output_names=["output"],
+    # )
+
+    dynamic = True
+    opset = 12
+
+    torch.onnx.export(model, dummy_input, output_path, verbose=False,
+                      opset_version=opset,
+                      training=torch.onnx.TrainingMode.EVAL,
+                      do_constant_folding=True,
+                      input_names=['INPUT__0'],
+                      output_names=['OUTPUT__0'],
+                      dynamic_axes={'INPUT__0': {0: 'batch', 2: 'height', 3: 'width'},  # shape(1,3,640,640)
+                                    'OUTPUT__0': {0: 'batch', 1: 'classes'}  # shape(1,25200,85)
+                                    } if dynamic else None)
 
 
 if __name__ == '__main__':
