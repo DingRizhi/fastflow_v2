@@ -4,15 +4,15 @@ import os
 import json
 
 duanzi_crop_bbox = {
-    "94": [[[150.31818181818193, 1050.2727272727273], [750.9545454545457, 1850.4545454545455]],
-           [[886.5000000000002, 1151.2727272727273], [1366.0454545454547, 1821.7272727272727]],
-           [[1611.5000000000002, 1167.1818181818182], [2134.227272727273, 1871.7272727272727]]],
-    "140": [[[384.2272727272729, 1317.1818181818182], [895.5909090909092, 1953.5454545454545]],
-            [[1013.7727272727275, 1278.5454545454545], [1513.7727272727275, 1921.7272727272727]],
-            [[1613.7727272727275, 1210.3636363636365], [2141.045454545455, 1876.2727272727273]]],
-    "141": [[[291.0454545454547, 942.1818181818182], [900.1363636363637, 1662.6363636363637]],
-            [[972.8636363636365, 876.2727272727273], [1577.4090909090912, 1628.5454545454545]],
-            [[1711.5, 796.7272727272727], [2286.5, 1549.0]]]
+    "94": [[[120, 1020], [850, 1903]],
+           [[818, 1050], [1550, 1913]],
+           [[1450, 1100], [2250, 1920]]],
+    "140": [[[331, 1174], [1000, 2012]],
+            [[927, 1125], [1536, 1994]],
+            [[1529, 1099], [2209, 1905]]],
+    "141": [[[222, 819], [1000, 1778]],
+            [[870, 769], [1644, 1700]],
+            [[1580, 688], [2338, 1600]]]
 }
 
 
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     # crop_images_in_labelme_images("/home/log/PycharmProjects/fastflow_v2/datasets/MVTec/loutong_test_original/defect",
     #                               "/home/log/PycharmProjects/fastflow_v2/datasets/MVTec/loutong_test_original/")
 
-    # crop_images_in_specific_bbox("/data/BYD_dingzi/dataset/duanziqiliu/test/defect","/data/BYD_dingzi/dataset/duanziqiliu_crop/test/defect")
+    crop_images_in_specific_bbox("/data/BYD_dingzi/dataset/duanziqiliu/defect","/data/BYD_dingzi/dataset/duanziqiliu_manual_crop/defect")
 
-    crop_images_in_labelme_images("/data/BYD_dingzi/dataset/duanziqiliu/test/defect",
-                                  "/data/BYD_dingzi/dataset/duanziqiliui_crop_v2/")
+    # crop_images_in_labelme_images("/data/BYD_dingzi/dataset/duanziqiliu/test/defect",
+    #                               "/data/BYD_dingzi/dataset/duanziqiliui_crop_v2/")

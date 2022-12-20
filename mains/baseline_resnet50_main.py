@@ -50,7 +50,7 @@ def main(**kwargs):
     train_transformer = transforms.Compose([
         transforms.Resize((256, 256), interpolation=3),  # size=opt.height (224, 224)
         transforms.RandomHorizontalFlip(),
-        # transforms.RandomCrop(size=opt.height),
+        transforms.RandomCrop(size=256),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
     ])
@@ -66,9 +66,9 @@ def main(**kwargs):
     print(test_transformer)
 
     # dataset
-    train_data = ClassifyDataset("/data/BYD_dingzi/dataset/duanziqiliu_crop_classify",
+    train_data = ClassifyDataset("/data/BYD_dingzi/dataset/duanziqiliu_manual_crop_classify",
                                  mode="train", transform=train_transformer)
-    test_data = ClassifyDataset("/data/BYD_dingzi/dataset/duanziqiliu_crop_classify",
+    test_data = ClassifyDataset("/data/BYD_dingzi/dataset/duanziqiliu_manual_crop_classify",
                                 mode="test", transform=test_transformer)
     num_train_classes = train_data.num_class
 

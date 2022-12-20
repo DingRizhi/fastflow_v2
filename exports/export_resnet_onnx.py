@@ -85,6 +85,6 @@ def check_export(onnx_path_demo, image_path):
 
 
 if __name__ == '__main__':
-    # convert_to_resnet_onnx("../_experiment_checkpoints/exp95_resnet50_2022-12-13-10-57/epoch_44_model.pth", "../_exports/resnet50.onnx")
+    # convert_to_resnet_onnx("../_experiment_checkpoints/exp102_resnet50_2022-12-19-15-49/epoch_80_model.pth", "../_exports/resnet50_v2.onnx")
 
-    check_export("../_exports/resnet50.onnx", "../_exports/*.jpg")
+    check_export("../_exports/resnet50_v2.onnx", "../_exports/*.jpg")

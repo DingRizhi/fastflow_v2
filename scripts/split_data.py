@@ -31,6 +31,7 @@ def split_anomaly_data(data_dir, save_root, val_num):
     image_path_list = glob.glob(f"{data_dir}/*.jpg")
     print(f"total images: {len(image_path_list)}")
 
+    val_num = int(0.2 * len(image_path_list)) if val_num is None else val_num
     val_list = random.sample(image_path_list, val_num)
     train_list = [i for i in image_path_list if i not in val_list]
     copy_images(train_list, "train", save_root)
@@ -41,5 +42,5 @@ if __name__ == '__main__':
     # split_anomaly_data("/data/BYD_dingzi/dataset/duanziqiliui_crop_v2/good",
     #                    "/data/BYD_dingzi/dataset/duanziqiliui_crop_v2", 30)
 
-    split_anomaly_data("/data/BYD_dingzi/dataset/duanziqiliu_crop_classify/good",
-                       "/data/BYD_dingzi/dataset/duanziqiliu_crop_classify/good", 21)
+    split_anomaly_data("//data/BYD_dingzi/dataset/duanziqiliu_manual_crop_classify/good",
+                       "/data/BYD_dingzi/dataset/duanziqiliu_manual_crop_classify/good", None)
