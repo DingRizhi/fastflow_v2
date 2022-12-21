@@ -67,7 +67,7 @@ def eval_export_model(model_path, mode):
         outputs = outputs.cpu().detach()
 
         for n_batch, (anomaly_map, image, label) in enumerate(zip(outputs, inputs, labels)):
-            score = predict_anomaly_score(anomaly_map)
+            score, label_ = predict_anomaly_score(anomaly_map)
             result_name = generate_image(anomaly_map, image, label, score,
                                          n_batch, n_iter, "../_exports", 0.776)
             print(result_name)

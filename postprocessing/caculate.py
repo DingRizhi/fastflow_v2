@@ -4,14 +4,19 @@ from sklearn.metrics import roc_auc_score
 import torch
 
 
-def predict_anomaly_score(anomaly_map):
+def predict_anomaly_score(anomaly_map, threshold=0.776, label_names=["anomaly", "good"]):
 
     anomaly_map_x = anomaly_map.squeeze()
     anomaly_map_x = (anomaly_map_x - anomaly_map_x.min()) / np.ptp(anomaly_map_x)
     # print(anomaly_map_x,'+++')
     anomaly_score = anomaly_map_x.reshape(anomaly_map_x.shape[0], -1).max(dim=1).values[0].item()
+    label = None
+    if anomaly_score >= threshold:
+        label = label_names[1]
+    else:
+        label = label_names[0]
 
-    return anomaly_score
+    return anomaly_score, label
 
 
 auroc_metric = metrics.ROC_AUC()
@@ -32,7 +37,7 @@ def get_best_thredhold(model, dataloader):
         label_list = []
 
         for n_batch, (anomaly_map, image, label) in enumerate(zip(outputs, inputs, labels)):
-            score = predict_anomaly_score(anomaly_map)
+            score, label_ = predict_anomaly_score(anomaly_map)
             score_list.append(score)
             label_list.append(label.tolist())
 
