@@ -4,9 +4,11 @@ from sklearn.metrics import roc_auc_score
 import torch
 
 
-def predict_anomaly_score(anomaly_map, threshold=0.776, label_names=["anomaly", "good"]):
+def predict_anomaly_score(anomaly_map, threshold=0.776, label_names=["anomaly", "good"], region_box=None):
 
     anomaly_map_x = anomaly_map.squeeze()
+    if region_box:
+        anomaly_map_x = anomaly_map_x[region_box[1]: region_box[3], region_box[0]:region_box[2]]
     anomaly_map_x = (anomaly_map_x - anomaly_map_x.min()) / np.ptp(anomaly_map_x)
     # print(anomaly_map_x,'+++')
     anomaly_score = anomaly_map_x.reshape(anomaly_map_x.shape[0], -1).max(dim=1).values[0].item()

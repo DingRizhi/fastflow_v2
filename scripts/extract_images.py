@@ -4,16 +4,25 @@ import shutil
 import random
 
 
-def extract_images_by_platform_ids(image_dir, save_dir, platform_ids):
+def extract_images_by_platform_ids(image_dir, save_dir, platform_ids, merge_save=False, flag_str=None):
     image_path_list = glob.glob(f"{image_dir}/*.jpg")
+    if flag_str is not None:
+        save_dir = os.path.join(save_dir, flag_str)
+        os.makedirs(save_dir, exist_ok=True)
 
     for image_path in image_path_list:
         image_base_name = os.path.basename(image_path)
         image_pure_name, image_exe_name = os.path.splitext(image_base_name)
         image_platform_id = int(image_pure_name.split("-")[-1])
         if image_platform_id in platform_ids:
-            shutil.copyfile(image_path, os.path.join(save_dir, image_base_name))
-            print(f"copy image to {os.path.join(save_dir, image_base_name)}")
+            if merge_save:
+                shutil.copyfile(image_path, os.path.join(save_dir, image_base_name))
+                print(f"copy image to {os.path.join(save_dir, image_base_name)}")
+            else:
+                save_platform_id_dir = os.path.join(save_dir, str(image_platform_id))
+                os.makedirs(save_platform_id_dir, exist_ok=True)
+                shutil.copyfile(image_path, os.path.join(save_platform_id_dir, image_base_name))
+                print(f"copy image to {os.path.join(save_platform_id_dir, image_base_name)}")
 
 
 def copy_images(img_path_list, mode, save_dir):
@@ -58,8 +67,7 @@ if __name__ == '__main__':
     # extract_images_by_platform_ids("/data/BYD_dingzi/12个产品良品图", "/data/BYD_dingzi/dataset/duanziqiliu/good",
     #                                [94, 140, 141])
 
-    # extract_images_by_platform_ids("/data/异常检测/20221206_good", "/data/异常检测/side_images/original",
-    #                                [20, 23, 24, 26, 27, 30, 31, 33, 34, 36, 39, 60, 63, 64, 66, 67, 70,
-    #                                 71, 73, 74, 76, 79, 103, 104, 106, 107, 110, 111, 113, 114, 116])
+    extract_images_by_platform_ids("/data/BYD_dingzi/achive/20221219/original_pictures-24pcs-良品", "/data/BYD_dingzi/loutong_big/good_original",
+                                   [164, 167, 168], flag_str='20221219_24pcs_2')
 
-    split_data("/data/BYD_dingzi/dataset/duanziqiliu/good", "/data/BYD_dingzi/dataset/duanziqiliu")
+    # split_data("/data/BYD_dingzi/dataset/duanziqiliu/good", "/data/BYD_dingzi/dataset/duanziqiliu")

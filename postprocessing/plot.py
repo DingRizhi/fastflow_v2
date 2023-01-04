@@ -78,12 +78,16 @@ def convert_image(image):
     return image_add
 
 
-def generate_image(anomaly_map, image, label, anomaly_score, n_batch, n_iter, save_dir, threshold, alpha=0.8, gamma=0):
+def generate_image(anomaly_map, image, label, anomaly_score, n_batch, n_iter, save_dir, threshold, alpha=0.8, gamma=0, region_box=None):
 
     image_add = convert_image(image)
     image_add = np.moveaxis(image_add, 0, -1)
 
     anomaly_map_add = convert_image(anomaly_map)
+    if region_box:
+        anomaly_mask = np.zeros(anomaly_map_add.shape)
+        anomaly_mask[118:213, 23: 238] = 1
+        anomaly_map_add = (anomaly_map_add * anomaly_mask).astype(np.uint8)
     anomaly_map_add = cv2.applyColorMap(anomaly_map_add, cv2.COLORMAP_JET)
     anomaly_map_add = cv2.cvtColor(anomaly_map_add, cv2.COLOR_BGR2RGB)
     superimposed_map = cv2.addWeighted(anomaly_map_add, alpha, image_add, (1 - alpha), gamma)
@@ -117,6 +121,7 @@ def generate_image(anomaly_map, image, label, anomaly_score, n_batch, n_iter, sa
     plt.close()
     os.makedirs(save_dir, exist_ok=True)
     fig.savefig(os.path.join(save_dir, 'img_' + str(n_iter) + '_' + str(n_batch) + '_' + check + '.png'))
+    # print('img_' + str(n_iter) + '_' + str(n_batch) + '_' + check + '.png')
     return result_name
 
 

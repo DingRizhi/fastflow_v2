@@ -202,6 +202,15 @@ def train(args):
         if auroc > best_auroc:
             best_auroc = auroc
             best_info = {'auroc': auroc, 'f_score_max': f_score_max, "threshold_best": threshold_best}
+            torch.save(
+                {
+                    "epoch": epoch,
+                    "model_state_dict": model.state_dict(),
+                    "optimizer_state_dict": optimizer.state_dict(),
+                },
+                os.path.join(checkpoint_dir, "%d.pt" % epoch),
+            )
+
         if (epoch + 1) % const.CHECKPOINT_INTERVAL == 0 or epoch == 0:
             torch.save(
                 {
@@ -246,7 +255,7 @@ def parse_args():
         "-cat",
         "--category",
         # default='duanziqiliui_crop_v2',
-        default='duanziqiliu_crop_94_v2',
+        default='loutong_168',
         type=str,
         # choices=const.MVTEC_CATEGORIES,
         # required=True,

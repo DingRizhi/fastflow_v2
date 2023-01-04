@@ -38,12 +38,12 @@ def crop_images(img_dir, save_dir):
 
 def crop_images_in_labelme_images(img_dir, save_dir, label_name_dict={"good":"duanzi_good", "bad":"duanzi_bad"}):
     image_path_list = glob.glob(f"{img_dir}/*.jpg")
-    good_dir = os.path.join(save_dir, "good")
-    if not os.path.exists(good_dir):
-        os.mkdir(good_dir)
-    bad_dir = os.path.join(save_dir, "defect")
-    if not os.path.exists(bad_dir):
-        os.mkdir(bad_dir)
+    # good_dir = os.path.join(save_dir, "good")
+    # if not os.path.exists(good_dir):
+    #     os.mkdir(good_dir)
+    # bad_dir = os.path.join(save_dir, "defect")
+    # if not os.path.exists(bad_dir):
+    #     os.mkdir(bad_dir)
 
     for image_path in image_path_list:
         print(image_path)
@@ -68,10 +68,13 @@ def crop_images_in_labelme_images(img_dir, save_dir, label_name_dict={"good":"du
                     )
                 print(x1, y1, x2, y2)
                 img_ = image.crop((x1, y1, x2, y2))
-                if label == label_name_dict["good"]:
-                    img_.save(os.path.join(good_dir, f"{image_pure_name}_{index}.jpg"))
-                elif label == label_name_dict["bad"]:
-                    img_.save(os.path.join(bad_dir, f"{image_pure_name}_{index}.jpg"))
+                # if label == label_name_dict["good"]:
+                #     img_.save(os.path.join(good_dir, f"{image_pure_name}_{index}.jpg"))
+                # elif label == label_name_dict["bad"]:
+                #     img_.save(os.path.join(bad_dir, f"{image_pure_name}_{index}.jpg"))
+                if label == "shangxian":
+                    img_.save(os.path.join(save_dir, f"{image_pure_name}_{index}.jpg"))
+
 
 
 def crop_images_in_specific_bbox(img_dir, save_dir, crop_boxes_dict=duanzi_crop_bbox):
@@ -95,7 +98,7 @@ if __name__ == '__main__':
     # crop_images_in_labelme_images("/home/log/PycharmProjects/fastflow_v2/datasets/MVTec/loutong_test_original/defect",
     #                               "/home/log/PycharmProjects/fastflow_v2/datasets/MVTec/loutong_test_original/")
 
-    crop_images_in_specific_bbox("/data/BYD_dingzi/dataset/duanziqiliu/defect","/data/BYD_dingzi/dataset/duanziqiliu_manual_crop/defect")
+    crop_images_in_labelme_images("/home/log/Downloads/LIN_TEST/val_01","/data/BYD_dingzi/shangxian_crop/val_01")
 
     # crop_images_in_labelme_images("/data/BYD_dingzi/dataset/duanziqiliu/test/defect",
     #                               "/data/BYD_dingzi/dataset/duanziqiliui_crop_v2/")

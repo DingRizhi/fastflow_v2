@@ -42,5 +42,5 @@ if __name__ == '__main__':
     # split_anomaly_data("/data/BYD_dingzi/dataset/duanziqiliui_crop_v2/good",
     #                    "/data/BYD_dingzi/dataset/duanziqiliui_crop_v2", 30)
 
-    split_anomaly_data("//data/BYD_dingzi/dataset/duanziqiliu_manual_crop_classify/good",
-                       "/data/BYD_dingzi/dataset/duanziqiliu_manual_crop_classify/good", None)
+    split_anomaly_data("/home/log/Downloads/overkill_ddpm/canjiao_ddpm_500",
+                       "/home/log/Downloads/overkill_ddpm/canjiao", None)

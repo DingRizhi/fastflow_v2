@@ -39,8 +39,8 @@ TRAINING_BACKBONE = False
 LOAD_PRETRAINED_BACKBONE = False
 # PRETRAINED_BACKBONE_PTH = "/home/log/PycharmProjects/fastflow_v2/_experiment_checkpoints/exp43_resnet18_2022-12-07-10-46/epoch_49_model.pth"
 # PRETRAINED_BACKBONE_PTH = "/home/log/PycharmProjects/fastflow_v2/_experiment_checkpoints/exp42_resnet18_2022-12-07-10-29/epoch_6_model.pth"
-# PRETRAINED_BACKBONE_PTH = "/home/log/PycharmProjects/fastflow_v2/_experiment_checkpoints/exp49_resnet18_2022-12-07-15-33/epoch_37_model.pth"
-PRETRAINED_BACKBONE_PTH = "/home/log/PycharmProjects/fastflow_v2/_experiment_checkpoints/exp72_resnet18_2022-12-10-11-25/epoch_34_model.pth"
+PRETRAINED_BACKBONE_PTH = "/home/log/PycharmProjects/fastflow_v2/_experiment_checkpoints/exp49_resnet18_2022-12-07-15-33/epoch_37_model.pth"
+# PRETRAINED_BACKBONE_PTH = "/home/log/PycharmProjects/fastflow_v2/_experiment_checkpoints/exp72_resnet18_2022-12-10-11-25/epoch_34_model.pth"
 
 SCHEDULER_EPOTCH = 5
 

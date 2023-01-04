@@ -117,7 +117,7 @@ def check_export(onnx_path_demo, image_path, crop_flag=False):
 
 
 if __name__ == '__main__':
-    # convert_to_resnet_onnx("../_experiment_checkpoints/exp102_resnet50_2022-12-19-15-49/epoch_80_model.pth", "../_exports/resnet50_v2.onnx")
+    convert_to_resnet_onnx("../_exports/resnet50_shangxian_0103.pth", "../_exports/resnet50_shangxian_0103.onnx")
 
     # check_export("../_exports/resnet50_v2.onnx", "../_exports/0390-0024-94_2.jpg", False)
-    check_export("../_exports/resnet50_v2.onnx", "../_exports/0390-0024-94.jpg", True)
+    # check_export("../_exports/resnet50_v2.onnx", "../_exports/0390-0024-94.jpg", True)
