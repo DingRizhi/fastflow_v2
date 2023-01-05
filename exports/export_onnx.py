@@ -10,10 +10,11 @@ from exports.export_resnet_onnx import to_numpy
 import glob
 import cv2
 
+
 def convert_to_torchscript(config_path, model_pth, output_path):
     config = yaml.safe_load(open(config_path, "r"))
     # model = build_model(config)
-    model = FastFlowSimply("resnet18", 8, [256, 256], True, 1.0)
+    model = FastFlowSimply("resnet18", 8, [config["input_height"], config["input_width"]], True, 1.0)
     checkpoint = torch.load(model_pth, map_location=torch.device('cpu'))
     model.load_state_dict(checkpoint["model_state_dict"])
     model.eval()
@@ -39,10 +40,10 @@ def convert_to_torchscript(config_path, model_pth, output_path):
     # )
 
 
-def eval_export_model(model_path, mode, image_path):
+def eval_export_model(model_path, mode, image_path, label=None, input_size=(512, 512)):
     image_transform = transforms.Compose(
         [
-            transforms.Resize((256, 256)),
+            transforms.Resize(input_size),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
         ]
@@ -57,8 +58,12 @@ def eval_export_model(model_path, mode, image_path):
     if mode == "torchscript":
         jit_model = torch.jit.load(model_path)
 
-    for img_ in images:
-        print(os.path.basename(img_))
+    for index, img_ in enumerate(images):
+        img_base_name = os.path.basename(img_)
+        if label is None:
+            label_name = img_base_name.split("_")[0]
+            label = 0 if label_name == "defect" else 1
+        print(img_base_name)
         image = Image.open(img_)
         # image = cv2.imread(img_)
         # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -72,25 +77,24 @@ def eval_export_model(model_path, mode, image_path):
 
         # print(f"outputs: {outputs}")
 
-        score, label_ = predict_anomaly_score(outputs, threshold=0.388)
-        # score1, label_1 = predict_anomaly_score(anomaly_map, region_box=[23, 118, 238, 213])
+        score, label_ = predict_anomaly_score(outputs, threshold=0.8198325037956238)
 
-        # result_name = generate_image(anomaly_map, image, label, score,
-        #                              n_batch, n_iter, "../_exports/faqiabianxing ", 0.388, region_box=1)
+        result_name = generate_image(outputs, image, label, score,
+                                     0, index, "../_exports/loutong_big ", 0.8198325037956238)
         print(f"label_name: {label_}, score: {score}")
         # break
 
 
 if __name__ == '__main__':
     # convert_to_torchscript("../configs/resnet18.yaml",
-    #                 "../_experiment_checkpoints/exp60_dingzi_side_data_2022-12-07-17-21/129.pt",
-    #                 "../_exports/fastflow_faqiabianxing.pth")
+    #                 "../_experiment_checkpoints/exp115_loutong_168_2023-01-04-15-19/23.pt",
+    #                 "../_exports/fastflow_loutong_big.pth")
 
     # eval_export_model("../_exports/fastflow_faqiabianxing.pth", "torchscript",
     #                   "/home/log/PycharmProjects/triton_deploy_cloud/triton_template/test_data/val_faqiabianxing_img/defect/0390-0022-23.jpg")
 
-    eval_export_model("../_exports/fastflow_faqiabianxing.pth", "torchscript",
-                      "/home/log/PycharmProjects/triton_deploy_cloud/triton_template/test_data/val_faqiabianxing_img/defect/*.jpg")
+    # eval_export_model("../_exports/fastflow_faqiabianxing.pth", "torchscript",
+    #                   "/home/log/PycharmProjects/triton_deploy_cloud/triton_template/test_data/val_faqiabianxing_img/defect/*.jpg")
 
-    # eval_export_model("../_exports/model.pt", "torchscript",
-    #                   "/home/log/PycharmProjects/triton_deploy_cloud/triton_template/test_data/val_faqiabianxing_img/defect/0390-0022-23.jpg")
+    eval_export_model("../_exports/fastflow_loutong_big.pth", "torchscript",
+                      "/data/BYD_dingzi/dataset/loutong_168/test/defect/*.jpg")
