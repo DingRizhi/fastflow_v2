@@ -63,11 +63,43 @@ def split_data(original_img_dir, data_dir, test_good_num=4):
         copy_images(train_good_list, 'train', data_dir)
 
 
+def extract_images_by_image_names(img_dir, save_dir):
+    image_names = '''0666-0016-22 
+        0666-0016-58
+        0666-0016-101
+        0666-0016-107
+        0666-0016-109
+        0666-0020-58
+        0666-0020-60
+        0666-0020-107
+        0666-0020-109
+        0666-0023-58
+        0666-0023-60
+        0666-0023-107
+        0666-0026-15
+        0666-0026-65
+        0668-0011-58
+        0668-0011-60
+        0668-0011-109
+    '''
+    image_names = image_names.split('\n')
+    image_names = [i.strip() for i in image_names if i.strip() != '']
+
+    for i in image_names:
+        image_path = os.path.join(img_dir, f"{i}.jpg")
+        json_path = os.path.join(img_dir, f"{i}.json")
+
+        shutil.copyfile(image_path, os.path.join(save_dir, f"{i}.jpg"))
+        shutil.copyfile(json_path, os.path.join(save_dir, f"{i}.json"))
+
+
 if __name__ == '__main__':
     # extract_images_by_platform_ids("/data/BYD_dingzi/12个产品良品图", "/data/BYD_dingzi/dataset/duanziqiliu/good",
     #                                [94, 140, 141])
 
-    extract_images_by_platform_ids("/data/BYD_dingzi/achive/20221219/original_pictures-24pcs-良品", "/data/BYD_dingzi/loutong_big/good_original",
-                                   [164, 167, 168], flag_str='20221219_24pcs_2')
+    # extract_images_by_platform_ids("/data/BYD_dingzi/achive/20221219/original_pictures-24pcs-良品", "/data/BYD_dingzi/loutong_big/good_original",
+    #                                [164, 167, 168], flag_str='20221219_24pcs_2')
 
     # split_data("/data/BYD_dingzi/dataset/duanziqiliu/good", "/data/BYD_dingzi/dataset/duanziqiliu")
+
+    extract_images_by_image_names("/home/log/Downloads/0105-漏失数据-22pcs", "/data/BYD_dingzi/tiexinqiliu/2023-01-05")

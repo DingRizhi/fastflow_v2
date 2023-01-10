@@ -48,16 +48,19 @@ def main(**kwargs):
 
     # Transform
     train_transformer = transforms.Compose([
-        transforms.Resize((128, 128), interpolation=3),  # size=opt.height (224, 224)
+        # transforms.Resize((128, 128), interpolation=3),  # size=opt.height (224, 224)
+        transforms.Resize((256, 256), interpolation=3),  # size=opt.height (224, 224)
         transforms.RandomHorizontalFlip(),
-        transforms.RandomCrop(size=128),
+        # transforms.RandomCrop(size=128),
+        transforms.RandomCrop(size=256),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
     ])
     print('------------train_transformer------------')
     print(train_transformer)
     test_transformer = transforms.Compose([
-        transforms.Resize((128, 128), interpolation=3),
+        # transforms.Resize((128, 128), interpolation=3),
+        transforms.Resize((256, 256), interpolation=3),
         # transforms.CenterCrop(size=opt.height),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
@@ -66,9 +69,9 @@ def main(**kwargs):
     print(test_transformer)
 
     # dataset
-    train_data = ClassifyDataset("/data/BYD_dingzi/dataset/shangxian_classify_v3",
+    train_data = ClassifyDataset("/data/BYD_dingzi/dataset/duanziqiliu_manual_crop_classify_v3",
                                  mode="train", transform=train_transformer)
-    test_data = ClassifyDataset("/data/BYD_dingzi/dataset/shangxian_classify_v3",
+    test_data = ClassifyDataset("/data/BYD_dingzi/dataset/duanziqiliu_manual_crop_classify_v3",
                                 mode="test", transform=test_transformer)
     num_train_classes = train_data.num_class
 

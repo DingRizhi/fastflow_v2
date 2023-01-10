@@ -4,13 +4,13 @@ import os
 import json
 
 duanzi_crop_bbox = {
-    "94": [[[120, 1020], [850, 1903]],
+    "102": [[[120, 1020], [850, 1903]],
            [[818, 1050], [1550, 1913]],
            [[1450, 1100], [2250, 1920]]],
-    "140": [[[331, 1174], [1000, 2012]],
+    "150": [[[331, 1174], [1000, 2012]],
             [[927, 1125], [1536, 1994]],
             [[1529, 1099], [2209, 1905]]],
-    "141": [[[222, 819], [1000, 1778]],
+    "151": [[[222, 819], [1000, 1778]],
             [[870, 769], [1644, 1700]],
             [[1580, 688], [2338, 1600]]]
 }
@@ -91,6 +91,7 @@ def crop_images_in_specific_bbox(img_dir, save_dir, crop_boxes_dict=duanzi_crop_
             img_.save(os.path.join(save_dir, f"{image_pure_name}_{i}.jpg"))
 
 
+
 if __name__ == '__main__':
     # crop_images_in_labelme_images("/home/log/PycharmProjects/fastflow_v2/datasets/MVTec/dingzi_side_data/test/defect",
     #                               "/home/log/PycharmProjects/fastflow_v2/datasets/MVTec/dingzi_side_data_crop/test/defect")
@@ -98,7 +99,9 @@ if __name__ == '__main__':
     # crop_images_in_labelme_images("/home/log/PycharmProjects/fastflow_v2/datasets/MVTec/loutong_test_original/defect",
     #                               "/home/log/PycharmProjects/fastflow_v2/datasets/MVTec/loutong_test_original/")
 
-    crop_images_in_labelme_images("/home/log/Downloads/LIN_TEST/val_01","/data/BYD_dingzi/shangxian_crop/val_01")
+    # crop_images_in_labelme_images("/home/log/Downloads/LIN_TEST/val_01","/data/BYD_dingzi/shangxian_crop/val_01")
 
     # crop_images_in_labelme_images("/data/BYD_dingzi/dataset/duanziqiliu/test/defect",
     #                               "/data/BYD_dingzi/dataset/duanziqiliui_crop_v2/")
+
+    crop_images_in_specific_bbox("/data/BYD_dingzi/duanziqiliu/2023-01-09/original/721", "/data/BYD_dingzi/duanziqiliu/2023-01-09/crop/721")

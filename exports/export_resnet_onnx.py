@@ -6,6 +6,7 @@ from models.backbone_resnet50 import Resnet50
 import torch
 import onnxruntime
 import os
+import numpy as np
 from dataloader.classify_dataset import ClassifyDataset
 from torchvision import transforms
 from postprocessing.caculate import predict_anomaly_score
@@ -15,26 +16,26 @@ from scipy.special import softmax
 
 
 duanzi_crop_bbox = {
-    "94": [[[120, 1020], [850, 1903]],
+    "102": [[[120, 1020], [850, 1903]],
            [[818, 1050], [1550, 1913]],
            [[1450, 1100], [2250, 1920]]],
-    "140": [[[331, 1174], [1000, 2012]],
+    "150": [[[331, 1174], [1000, 2012]],
             [[927, 1125], [1536, 1994]],
             [[1529, 1099], [2209, 1905]]],
-    "141": [[[222, 819], [1000, 1778]],
+    "151": [[[222, 819], [1000, 1778]],
             [[870, 769], [1644, 1700]],
             [[1580, 688], [2338, 1600]]]
 }
 
 
-def convert_to_resnet_onnx(model_pth, output_path):
+def convert_to_resnet_onnx(model_pth, output_path, input_size=(256, 256)):
 
     model = Resnet50(2)
     checkpoint = torch.load(model_pth, map_location=torch.device('cpu'))
     model.load_state_dict(checkpoint)
     model.eval()
     dummy_input = torch.autograd.Variable(
-        torch.randn(1, 3, 256, 256)
+        torch.randn(1, 3, input_size[0], input_size[1])
     )
 
     # with torch.no_grad():
@@ -82,7 +83,14 @@ def inference(test_transformer, image, session):
     outputs = softmax(outputs, axis=1)
 
     # print(outputs[0].shape, outputs[1].shape, outputs[2].shape)
+    predict_ids = []
+    for i in list(outputs):
+        if i[0] > i[1]:
+            predict_ids.append(0)
+        else:
+            predict_ids.append(1)
     print(outputs)
+    return predict_ids
 
 
 def check_export(onnx_path_demo, image_path, crop_flag=False):
@@ -96,28 +104,52 @@ def check_export(onnx_path_demo, image_path, crop_flag=False):
     session = onnxruntime.InferenceSession(onnx_path_demo)
 
     images = glob.glob(image_path)
-
+    pred_result = []
     for img_ in images:
         img_base_name = os.path.basename(img_)
-        image_pure_name = os.path.splitext(os.path.basename(image_path))[0]
-        platform_id = image_pure_name.split("-")[-1]
+        image_pure_name = os.path.splitext(img_base_name)[0]
+        s = image_pure_name.split("-")
+        platform_id = s[-1]
+        if '_' in platform_id:
+            platform_id = platform_id.split("_")[0]
         image = Image.open(img_)
         print(img_)
+
         if crop_flag:
             crop_boxes = duanzi_crop_bbox[str(platform_id)]
             for index, crop_box in enumerate(crop_boxes):
                 image_crop = image.crop((crop_box[0][0], crop_box[0][1], crop_box[1][0], crop_box[1][1]))
-                image_crop.save(os.path.join(os.path.dirname(img_), f"{image_pure_name}_crop_{index}.jpg"))
-                inference(test_transformer, image_crop, session)
+                # image_crop.save(os.path.join(os.path.dirname(img_), f"{image_pure_name}_crop_{index}.jpg"))
+                predict_ids = inference(test_transformer, image_crop, session)
+                pred_result += predict_ids
 
         else:
-            inference(test_transformer, image, session)
+            predict_ids = inference(test_transformer, image, session)
+            pred_result += predict_ids
 
             # print(outputs[0].shape, outputs[1].shape, outputs[2].shape)
+    pre_1 = 0
+    pre_0 = 0
+    for i in pred_result:
+        if i == 1:
+            pre_1 += 1
+        else:
+            pre_0 += 1
+    res = {"0": pre_0, "1": pre_1}
+    print(res)
 
 
 if __name__ == '__main__':
-    convert_to_resnet_onnx("../_exports/resnet50_shangxian_0103.pth", "../_exports/resnet50_shangxian_0103.onnx")
+    # duanziqiliu
+    convert_to_resnet_onnx("../_exports/resnet50_duanziqiliu_0110.pth",
+                           "../_exports/resnet50_duanziqiliu_0110.onnx",
+                           (256, 256))
 
-    # check_export("../_exports/resnet50_v2.onnx", "../_exports/0390-0024-94_2.jpg", False)
+    # shangxian
+    # convert_to_resnet_onnx("../_exports/resnet50_shangxian_0106_2.pth",
+    #                        "../_exports/resnet50_shangxian_0106_2.onnx",
+    #                        (128, 128))
+
     # check_export("../_exports/resnet50_v2.onnx", "../_exports/0390-0024-94.jpg", True)
+    # check_export("../_exports/resnet50_duanziqiliu_0107.onnx", "/data/BYD_dingzi/duanziqiliu/2023-01-05/good/*.jpg", False)
+    check_export("../_exports/resnet50_duanziqiliu_0110.onnx", "/data/BYD_dingzi/dataset/duanziqiliu_manual_crop_classify_v3/1_good/test/*.jpg", False)

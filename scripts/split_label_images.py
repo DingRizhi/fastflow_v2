@@ -45,4 +45,4 @@ def split_labels(labeled_img_dir, save_dir):
 
 
 if __name__ == '__main__':
-    split_labels("/home/log/Downloads/00_loutong_big_m", "/home/log/Downloads/00_loutong_big_m_crop")
+    split_labels("/home/log/Downloads/0106-伤线过杀残胶数据-19pcs", "/data/BYD_dingzi/canjiao_crop_0106")

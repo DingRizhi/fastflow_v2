@@ -6,9 +6,9 @@ import os
 from PIL import Image
 
 
-def eval_images(model_pth, image_path):
+def eval_images(model_pth, image_path, input_size=(128, 128)):
     test_transformer = transforms.Compose([
-        transforms.Resize((256, 256), interpolation=3),
+        transforms.Resize(input_size, interpolation=3),
         # transforms.CenterCrop(size=opt.height),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
@@ -43,4 +43,13 @@ def eval_images(model_pth, image_path):
 
 
 if __name__ == '__main__':
-    eval_images("../_exports/resnet50_shangxian_0103.pth", "/home/log/Downloads/overkill_ddpm/fanguang_ddpm_500/*.jpg")
+    # eval_images("../_exports/resnet50_shangxian_0106.pth", "/data/BYD_dingzi/canjiao_crop_0106/canjiao/*.jpg",
+    #             (128, 128))
+    # eval_images("../_exports/resnet50_shangxian_0106_2.pth", "/data/BYD_dingzi/canjiao_crop_0106/canjiao/*.jpg", (128, 128))
+    # eval_images("../_exports/resnet50_shangxian_0103.pth", "/data/BYD_dingzi/canjiao_crop_0106/canjiao/*.jpg", (128, 128))
+
+    # duanziqiliu
+    # eval_images("../_exports/resnet50_duanziqiliu_0107.pth", "/data/BYD_dingzi/duanziqiliu/2023-01-05/good/*.jpg",
+    #             (256, 256))
+    eval_images("../_exports/resnet50_duanziqiliu_0110.pth", "/data/BYD_dingzi/duanziqiliu/2023-01-09/defect/*.jpg",
+                (256, 256))

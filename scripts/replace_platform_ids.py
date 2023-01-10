@@ -1,5 +1,6 @@
 import glob
 import os
+import json
 
 a = '''
 1	1
@@ -247,8 +248,8 @@ for i in b:
 old_miss_matched = sorted(old_miss_matched)
 new_miss_matched = sorted(new_miss_matched)
 
-print(f"old miss match: {old_miss_matched}")
-print(f"new miss match: {new_miss_matched}")
+# print(f"old miss match: {old_miss_matched}")
+# print(f"new miss match: {new_miss_matched}")
 
 
 def get_new_ids(old_ids):
@@ -263,6 +264,21 @@ def get_new_ids(old_ids):
     print(new_ids)
 
 
+def recover_label_json(json_dir):
+    json_path_list = glob.glob(f"{json_dir}/*.json")
+    print(f"total images: {len(json_path_list)}")
+
+    for json_path in json_path_list:
+        with open(json_path, 'r') as f:
+            label_info = json.load(f)
+
+        label_info["imagePath"] = os.path.basename(json_path).replace("json", "jpg")
+
+        os.remove(json_path)
+        with open(json_path, 'w') as f:
+            json.dump(label_info, f, indent=2)
+
+
 def rename_val_image_platform_id(img_dir):
     image_path_list = glob.glob(f"{img_dir}/*.jpg")
     print(f"total images: {len(image_path_list)}")
@@ -270,6 +286,7 @@ def rename_val_image_platform_id(img_dir):
     for image_path in image_path_list:
         dir_path = os.path.dirname(image_path)
         base_name = os.path.basename(image_path)
+        json_path = image_path.replace("jpg", "json")
 
         img_pure_name = os.path.splitext(base_name)[0]
         ss = img_pure_name.split("-")
@@ -277,17 +294,32 @@ def rename_val_image_platform_id(img_dir):
         if str(img_platform_id) not in convert_dict:
             print(f"{image_path}'s platform id--{img_platform_id} not in convert_dict, remove")
             os.remove(image_path)
+            if os.path.exists(json_path):
+                os.remove(json_path)
+            continue
         new_img_platform_id = convert_dict[str(img_platform_id)]
         ss[-1] = new_img_platform_id
 
         new_image_name = "-".join(ss) + ".jpg"
 
         new_img_path = os.path.join(dir_path, new_image_name)
-
         os.rename(image_path, new_img_path)
+
+        if os.path.exists(json_path):
+            new_json_path = os.path.join(dir_path, new_image_name.replace("jpg", "json"))
+            with open(json_path, 'r') as f:
+                label_info = json.load(f)
+
+            label_info["imagePath"] = new_image_name
+
+            os.remove(json_path)
+            with open(new_json_path, 'w') as f:
+                json.dump(label_info, f, indent=2)
 
 
 if __name__ == '__main__':
-    # rename_val_image_platform_id("/home/log/PycharmProjects/triton_deploy_cloud/triton_template/test_data/val_02_img")
+    # rename_val_image_platform_id("/home/log/Downloads/LIN_TEST/val_02")
     # get_new_ids([20, 23, 24, 26, 27, 30, 31, 33, 34, 36, 39, 60, 63, 64, 66, 67, 70, 71, 73, 74, 76, 79, 103, 104, 106, 107, 110, 111, 113, 114, 116])
+
+    recover_label_json("/home/log/Downloads/LIN_TEST/val_02")
     pass
