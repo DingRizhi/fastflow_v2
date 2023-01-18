@@ -69,9 +69,9 @@ def main(**kwargs):
     print(test_transformer)
 
     # dataset
-    train_data = ClassifyDataset("/data/BYD_dingzi/dataset/duanziqiliu_manual_crop_classify_v3",
+    train_data = ClassifyDataset("/data/BYD_dingzi/dataset/duanziqiliu_manual_crop_classify_v4",
                                  mode="train", transform=train_transformer)
-    test_data = ClassifyDataset("/data/BYD_dingzi/dataset/duanziqiliu_manual_crop_classify_v3",
+    test_data = ClassifyDataset("/data/BYD_dingzi/dataset/duanziqiliu_manual_crop_classify_v4",
                                 mode="test", transform=test_transformer)
     num_train_classes = train_data.num_class
 

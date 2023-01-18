@@ -51,5 +51,5 @@ if __name__ == '__main__':
     # duanziqiliu
     # eval_images("../_exports/resnet50_duanziqiliu_0107.pth", "/data/BYD_dingzi/duanziqiliu/2023-01-05/good/*.jpg",
     #             (256, 256))
-    eval_images("../_exports/resnet50_duanziqiliu_0110.pth", "/data/BYD_dingzi/duanziqiliu/2023-01-09/defect/*.jpg",
+    eval_images("../_exports/resnet50_duanziqiliu_0111.pth", "/data/BYD_dingzi/duanziqiliu/2023-01-10/good/*.jpg",
                 (256, 256))

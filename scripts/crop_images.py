@@ -104,4 +104,4 @@ if __name__ == '__main__':
     # crop_images_in_labelme_images("/data/BYD_dingzi/dataset/duanziqiliu/test/defect",
     #                               "/data/BYD_dingzi/dataset/duanziqiliui_crop_v2/")
 
-    crop_images_in_specific_bbox("/data/BYD_dingzi/duanziqiliu/2023-01-09/original/721", "/data/BYD_dingzi/duanziqiliu/2023-01-09/crop/721")
+    crop_images_in_specific_bbox("/data/BYD_dingzi/duanziqiliu/2023-01-10/original", "/data/BYD_dingzi/duanziqiliu/2023-01-10/crop")

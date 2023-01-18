@@ -141,8 +141,8 @@ def check_export(onnx_path_demo, image_path, crop_flag=False):
 
 if __name__ == '__main__':
     # duanziqiliu
-    convert_to_resnet_onnx("../_exports/resnet50_duanziqiliu_0110.pth",
-                           "../_exports/resnet50_duanziqiliu_0110.onnx",
+    convert_to_resnet_onnx("../_exports/resnet50_duanziqiliu_0111.pth",
+                           "../_exports/resnet50_duanziqiliu_0111.onnx",
                            (256, 256))
 
     # shangxian
@@ -152,4 +152,6 @@ if __name__ == '__main__':
 
     # check_export("../_exports/resnet50_v2.onnx", "../_exports/0390-0024-94.jpg", True)
     # check_export("../_exports/resnet50_duanziqiliu_0107.onnx", "/data/BYD_dingzi/duanziqiliu/2023-01-05/good/*.jpg", False)
-    check_export("../_exports/resnet50_duanziqiliu_0110.onnx", "/data/BYD_dingzi/dataset/duanziqiliu_manual_crop_classify_v3/1_good/test/*.jpg", False)
+    # check_export("../_exports/resnet50_duanziqiliu_0110.onnx", "/data/BYD_dingzi/dataset/duanziqiliu_manual_crop_classify_v3/1_good/test/*.jpg", False)
+    check_export("../_exports/resnet50_duanziqiliu_0111.onnx",
+                 "/data/BYD_dingzi/duanziqiliu/2023-01-10/good/*.jpg", False)
