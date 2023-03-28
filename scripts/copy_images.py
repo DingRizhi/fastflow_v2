@@ -1,5 +1,6 @@
 import os
 import glob
+import random
 import shutil
 
 
@@ -32,5 +33,19 @@ def copy_image_path_list(image_path_list, save_dir, included_keys=None):
             shutil.copyfile(img_path.replace("jpg", "json"), os.path.join(save_dir, json_base_name))
 
 
+def sample_sub_dir_data(root_data, save_root, sample_rate):
+    sub_dirs = os.listdir(root_data)
+    for sd in sub_dirs:
+        sub_dir_path = os.path.join(root_data, sd)
+        img_path_list = glob.glob(f"{sub_dir_path}/*.jpg")
+        img_path_list = random.sample(img_path_list, int(len(img_path_list) * sample_rate))
+
+        save_dir_path = os.path.join(save_root, sd)
+        copy_image_path_list(img_path_list, save_dir_path)
+
+
 if __name__ == '__main__':
-    copy_image_path_list(glob.glob(f"/data/Data2Model/test_original/*/*.jpg"), "/data/Data2Model/test")
+    # copy_image_path_list(glob.glob(f"/data/Data2Model/test_original/*/*.jpg"), "/data/Data2Model/test")
+    sample_sub_dir_data("/data/Data2Model/train/train_ok/train_ok_2023-03-21_cropped",
+                        "/data/Data2Model/train/train_ok/train_ok_2023-03-21_cropped_sampled",
+                        0.3)

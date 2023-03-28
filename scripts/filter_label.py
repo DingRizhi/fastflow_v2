@@ -5,11 +5,8 @@ import copy
 import shutil
 
 
-def filter_labels(labeled_img_dir, selected_labels, save_dir):
+def filter_labels(labeled_img_dir, selected_labels):
     img_path_list = glob.glob(f"{labeled_img_dir}/*.jpg")
-
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir, exist_ok=True)
 
     for img_path in img_path_list:
         json_path = img_path.replace("jpg", "json")
@@ -23,14 +20,11 @@ def filter_labels(labeled_img_dir, selected_labels, save_dir):
             new_label_info = copy.deepcopy(label_info)
 
             shapes = label_info["shapes"]
-            new_shapes = []
+
             for shape in shapes:
                 label_name = shape["label"]
                 if label_name in selected_labels:
-                    new_shapes.append(shape)
-            new_label_info["shapes"] = new_shapes
 
-            save_json_path = os.path.join(save_dir, os.path.basename(json_path))
             with open(save_json_path, 'w') as f2:
                 json.dump(new_label_info, f2, indent=2)
 
