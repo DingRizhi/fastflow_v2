@@ -17,6 +17,7 @@ def copy_image_path_list(image_path_list, save_dir, included_keys=None):
         os.mkdir(save_dir)
 
     print(f"imgs: {len(image_path_list)}")
+    not_exists_imgs = []
 
     for img_path in image_path_list:
         img_base_name = os.path.basename(img_path)
@@ -27,10 +28,16 @@ def copy_image_path_list(image_path_list, save_dir, included_keys=None):
             if img_type is None or img_type not in included_keys:
                 continue
 
+        if not os.path.exists(img_path):
+            not_exists_imgs.append(img_path)
+            print(f"{img_path} not exists")
+            continue
         shutil.copyfile(img_path, os.path.join(save_dir, img_base_name))
 
         if os.path.exists(img_path.replace("jpg", "json")):
             shutil.copyfile(img_path.replace("jpg", "json"), os.path.join(save_dir, json_base_name))
+
+    print(f"not exits imgs: {len(not_exists_imgs)}")
 
 
 def sample_sub_dir_data(root_data, save_root, sample_rate):
