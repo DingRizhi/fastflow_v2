@@ -2,6 +2,7 @@ import os
 import glob
 import random
 import shutil
+import tqdm
 
 
 def count_sub_dir_files(root_dir):
@@ -31,7 +32,7 @@ def sample_data_img_files(root_dir, save_dir, defect_name, sample_num):
     if not os.path.exists(save_defect_dir):
         os.mkdir(save_defect_dir)
 
-    for img_path in sample_imgs:
+    for img_path in tqdm.tqdm(sample_imgs):
         image_base_name = os.path.basename(img_path)
         save_img_dir = os.path.join(save_defect_dir, os.path.basename(os.path.dirname(img_path)))
         if not os.path.exists(save_img_dir):
@@ -44,9 +45,9 @@ def sample_data_img_files(root_dir, save_dir, defect_name, sample_num):
 
 
 if __name__ == '__main__':
-    # count_sub_dir_files("/data/Data2Model/train_split_new_v2")
+    count_sub_dir_files("/data/Data2Model/train_split_new_v2_sample")
 
-    sample_data_img_files("/data/Data2Model/train_split_new_v2",
-                          "/data/Data2Model/train_split_new_v2",
-                          "pengshang", 700)
+    # sample_data_img_files("/data/Data2Model/train_split_new_v2",
+    #                       "/data/Data2Model/train_split_new_v2_sample",
+    #                       "zhenyan", 45)
 
