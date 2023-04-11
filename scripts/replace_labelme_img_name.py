@@ -40,4 +40,4 @@ def modify_all_img_name(glob_path):
 
 
 if __name__ == '__main__':
-    modify_all_img_name("/data/Data2Model/train_split_new_v2_sample/*/*/*.jpg")
+    modify_all_img_name("/data/Data2Model/train_split_new_v2/yise/*/*.jpg")

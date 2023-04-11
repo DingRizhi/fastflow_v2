@@ -3,13 +3,35 @@ import glob
 import json
 import copy
 import shutil
+import random
 
 
-def filter_labels(labeled_img_dir, selected_labels):
-    img_path_list = glob.glob(f"{labeled_img_dir}/*.jpg")
+def select_shapes_by_scores(label_info, min_score, max_score):
+    shapes = label_info["shapes"]
 
-    for img_path in img_path_list:
-        json_path = img_path.replace("jpg", "json")
+    new_shapes = []
+    for shape in shapes:
+        label_name = shape["label"]
+        score = shape["score"]
+
+        if min_score <= score < max_score:
+            new_shapes.append(shape)
+    if len(new_shapes) == 0:
+        return None
+
+    sample_num = len(new_shapes) if len(new_shapes) < 4 else 4
+    new_shapes = random.sample(new_shapes, sample_num)
+    label_info["shapes"] = new_shapes
+
+    return label_info
+
+
+def filter_labels_by_score(source_json_dir, save_dir, min_score, max_score):
+    if not os.path.exists(save_dir):
+        os.mkdir(save_dir)
+    json_path_list = glob.glob(f"{source_json_dir}/*.json")
+
+    for json_path in json_path_list:
 
         if not os.path.exists(json_path):
             print(f"not exists json path: {json_path}")
@@ -17,20 +39,15 @@ def filter_labels(labeled_img_dir, selected_labels):
 
         with open(json_path, 'r') as f:
             label_info = json.load(f)
-            new_label_info = copy.deepcopy(label_info)
+        label_info = select_shapes_by_scores(label_info, min_score, max_score)
 
-            shapes = label_info["shapes"]
-
-            for shape in shapes:
-                label_name = shape["label"]
-                if label_name in selected_labels:
-
-            with open(save_json_path, 'w') as f2:
-                json.dump(new_label_info, f2, indent=2)
-
-            shutil.copyfile(img_path, os.path.join(save_dir, os.path.basename(img_path)))
+        if label_info:
+            new_json_path = os.path.join(save_dir, os.path.basename(json_path))
+            with open(new_json_path, "w") as f:
+                json.dump(label_info, f, indent=2)
 
 
 if __name__ == '__main__':
-    filter_labels("/data/BYD_dingzi/dataset/duanziqiliu/good", ["duanzi_good", "duanzi_bad"],
-                  "/data/BYD_dingzi/dataset/duanziqiliu_bbox/good")
+    filter_labels_by_score("/data/Data2Model/train/train_ok_guosha/bak/D_guosha_json_0.15",
+                           "/data/Data2Model/train/train_ok_guosha/bak/D_guosha_json_0.15_0.2_5",
+                           0.15, 0.2)

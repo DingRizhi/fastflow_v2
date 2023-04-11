@@ -2,6 +2,7 @@ import os
 import glob
 import random
 import shutil
+import tqdm
 
 
 def get_ok_or_ng(img_path):
@@ -10,6 +11,21 @@ def get_ok_or_ng(img_path):
         return img_dir_name.split("_")[-1]
     except Exception:
         return None
+
+
+def copy_images_by_json_file(source_img_path_list, json_dir):
+    img_name_dict = {}
+    for img_path in source_img_path_list:
+        img_name_dict[f"{os.path.basename(img_path)}"] = img_path
+
+    json_path_list = glob.glob(f"{json_dir}/*.json")
+    for json_path in tqdm.tqdm(json_path_list):
+        json_base_name = os.path.basename(json_path)
+        img_name = json_base_name.replace(".json", ".jpg")
+
+        img_path = img_name_dict[img_name]
+
+        shutil.copyfile(img_path, os.path.join(json_dir, img_name))
 
 
 def copy_image_path_list(image_path_list, save_dir, included_keys=None):
@@ -52,7 +68,26 @@ def sample_sub_dir_data(root_data, save_root, sample_rate):
 
 
 if __name__ == '__main__':
-    # copy_image_path_list(glob.glob(f"/data/Data2Model/test_original/*/*.jpg"), "/data/Data2Model/test")
-    sample_sub_dir_data("/data/Data2Model/train/train_ok/train_ok_2023-03-21_cropped",
-                        "/data/Data2Model/train/train_ok/train_ok_2023-03-21_cropped_sampled",
-                        0.3)
+    # copy_image_path_list(glob.glob(f"/data/Data2Model/test_dataset/test_all/test_new/*/*.jpg"),
+    #                      "/data/Data2Model/test")
+
+    copy_images_by_json_file(glob.glob(f"/data/Data2Model/train/train_ok_guosha/D件过杀/*/*.jpg"),
+                             "/data/Data2Model/train/train_ok_guosha/bak/D_guosha_json_0.15_0.2_5")
+
+
+    # sample_sub_dir_data("/data/Data2Model/train/train_ok/train_ok_2023-03-21_cropped",
+    #                     "/data/Data2Model/train/train_ok/train_ok_2023-03-21_cropped_sampled",
+    #                     0.3)
+
+
+    # {
+    #     "pengshang": 0.11,
+    #     "bianxing": 0.06,
+    #     "huashang": 0.1,
+    #     "yise": 0.07,
+    #     "cashang": 0.12,
+    #     "gubao": 0.15,
+    #     "molie": 0.12,
+    #     "yashang": 0.08,
+    #     "zhenyan": 0.12
+    # }

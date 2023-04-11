@@ -1,88 +1,119 @@
 import os
-import numpy as np
-import json
-from glob import glob
+import shutil
+
 import cv2
-from sklearn.model_selection import train_test_split
-from os import getcwd
-
-# classes = ["shangxian", "", "neiqiaopian", "waiqiaopian", "duanziqiliu", "tiexinqiliu", "faqiabianxing", "ganraoxiang"]\
-# classes = ["loutong", "ganraoxiang"]   # 00
-# classes = ["shangxian", "zhipo", "neiqiaopian", "tiexinqiliu", "ganraoxiang"]   # 01
-classes = ["waiqiaopian", "tiexinqiliu", "ganraoxiang"]   # 02
+import json
+import numpy as np
+import glob
 
 
-# 1.标签路径
-labelme_path = 'dataset/BYD_PRE/defect_1217/02_wqp_txql_crop/'
-isUseTest = False  # 是否创建test集
-# 3.获取待处理文件
-files = glob(labelme_path + "*.json")
-files = [i.replace("\\", "/").split("/")[-1].split(".json")[0] for i in files]
+def classes_yaml_print():
+    c = '''huashang
+    cashang
+    pengshang
+    yise
+    aokeng
+    yashang
+    gubao
+    bianxing'''
+
+    c = c.split('\n')
+    for i, v, in enumerate(c):
+        print(f"{i}: {v}")
 
 
-# print(files)
-if isUseTest:
-    trainval_files, test_files = train_test_split(files, test_size=0.1, train_size=0.1, random_state=55)
-else:
-    trainval_files = files
-# split
-train_files, val_files = train_test_split(trainval_files, train_size=0.1, random_state=55)
+def find_no_seg_images(data_root):
+    count = 0
+    labels = glob.glob(f"{data_root}/labels/*/*.txt")
+    for label_txt in labels:
+        with open(label_txt, "r") as f:
+            lines = f.readlines()
+
+            for info in lines:
+                info_splits = info.split(" ")
+                if len(info_splits) <= 5:
+                    count += 1
+                    print(f"not segment, remove: {label_txt}")
+                    img_path = label_txt.replace("labels", "images").replace(".txt", ".jpg")
+                    os.remove(label_txt)
+                    os.remove(img_path)
+                    break
+    print(f"count: {count}")
 
 
-def convert(size, box):
-    dw = 1. / (size[0])
-    dh = 1. / (size[1])
-    x = (box[0] + box[1]) / 2.0 - 1
-    y = (box[2] + box[3]) / 2.0 - 1
-    w = box[1] - box[0]
-    h = box[3] - box[2]
-    x = x * dw
-    w = w * dw
-    y = y * dh
-    h = h * dh
-    return (x, y, w, h)
+def labelme_seg_to_yolo(json_path, save_path, img_shape, classes):
+    h, w = img_shape[0], img_shape[1]
+    with open(json_path, 'r') as f:
+        masks = json.load(f)['shapes']
+    with open(save_path, 'w+') as f:
+        for idx, mask_data in enumerate(masks):
+            mask_label = mask_data['label']
+            mask = np.array([np.array(i) for i in mask_data['points']], dtype=float)
+            mask[:, 0] /= w
+            mask[:, 1] /= h
+            mask = mask.reshape((-1))
+            if idx != 0:
+                f.write('\n')
+            f.write(f'{classes.index(mask_label)} {" ".join(list(map(lambda x: f"{x:.6f}", mask)))}')
 
 
-wd = getcwd()
-print(wd)
+def convert_labelme_jsons_to_yolo(img_path_list, save_dir, classes, mode, contact_dir_name=True):
+    if not os.path.exists(save_dir):
+        os.mkdir(save_dir)
+
+    imgs_save_dir = os.path.join(save_dir, "images")
+    if not os.path.exists(imgs_save_dir):
+        os.mkdir(imgs_save_dir)
+    labels_save_dir = os.path.join(save_dir, "labels")
+    if not os.path.exists(labels_save_dir):
+        os.mkdir(labels_save_dir)
+
+    for img_path in img_path_list:
+        img_base_name = os.path.basename(img_path)
+        img_pure_name = os.path.splitext(img_base_name)[0]
+        img_dir_name = os.path.basename(os.path.dirname(img_path))
+        json_path = img_path.replace(".jpg", ".json")
+        if not os.path.exists(json_path):
+            continue
+
+        img_save_dir_path = os.path.join(imgs_save_dir, mode) if contact_dir_name else os.path.join(imgs_save_dir, mode,
+                                                                                                    img_dir_name)
+        if not os.path.exists(img_save_dir_path):
+            os.makedirs(img_save_dir_path, exist_ok=True)
+        img_save_path = os.path.join(img_save_dir_path, f"{img_dir_name}_M_{img_pure_name}.jpg") if contact_dir_name else\
+            os.path.join(img_save_dir_path, img_base_name)
+        shutil.copyfile(img_path, img_save_path)
+        image = cv2.imread(img_save_path)
+
+        txt_save_dir_path = os.path.join(labels_save_dir, mode) if contact_dir_name else os.path.join(labels_save_dir,
+                                                                                                      mode,
+                                                                                                      img_dir_name)
+        if not os.path.exists(txt_save_dir_path):
+            os.makedirs(txt_save_dir_path, exist_ok=True)
+        txt_save_path = os.path.join(txt_save_dir_path, f"{img_dir_name}_M_{img_pure_name}.txt") if contact_dir_name \
+            else os.path.join(txt_save_dir_path, img_base_name.replace(".jpg", ".txt"))
+        labelme_seg_to_yolo(json_path, txt_save_path, image.shape, classes)
 
 
-def ChangeToYolo5(files, txt_Name):
-    if not os.path.exists('../tmp/'):
-        os.makedirs('../tmp/')
-    list_file = open('tmp/%s.txt' % (txt_Name), 'w')
-    for json_file_ in files:
-        json_filename = labelme_path + json_file_ + ".json"
-        imagePath = labelme_path + json_file_ + ".jpg"
-        if os.path.isfile(imagePath):
-            pass
-        else:
-            imagePath = imagePath.replace('.jpg', '.png')
-        list_file.write('%s/%s\n' % (wd, imagePath))
-        out_file = open('%s/%s.txt' % (labelme_path, json_file_), 'w')
-        json_file = json.load(open(json_filename, "r", encoding="utf-8"))
-        height, width, channels = cv2.imread(imagePath).shape
-        for multi in json_file["shapes"]:
-            points = np.array(multi["points"])
-            xmin = min(points[:, 0]) if min(points[:, 0]) > 0 else 0
-            xmax = max(points[:, 0]) if max(points[:, 0]) > 0 else 0
-            ymin = min(points[:, 1]) if min(points[:, 1]) > 0 else 0
-            ymax = max(points[:, 1]) if max(points[:, 1]) > 0 else 0
-            label = multi["label"]
-            if xmax <= xmin:
-                pass
-            elif ymax <= ymin:
-                pass
-            else:
-                print(json_filename,'---')
-                cls_id = classes.index(label)
-                b = (float(xmin), float(xmax), float(ymin), float(ymax))
-                bb = convert((width, height), b)
-                out_file.write(str(cls_id) + " " + " ".join([str(a) for a in bb]) + '\n')
-                print(json_filename, xmin, ymin, xmax, ymax, cls_id)
+def train_val_data_to_yolo_data(data_root, save_dir, class_name_list_file):
+    with open(class_name_list_file, 'r') as f:
+        classes = f.readlines()
+        classes = [i.strip() for i in classes]
+    train_data = os.path.join(data_root, "train")
+
+    train_imgs = glob.glob(f"{train_data}/*/*.jpg")
+    convert_labelme_jsons_to_yolo(train_imgs, save_dir, classes, "train")
+
+    val_data = os.path.join(data_root, "val")
+
+    val_imgs = glob.glob(f"{val_data}/*/*.jpg")
+    convert_labelme_jsons_to_yolo(val_imgs, save_dir, classes, "val")
 
 
-ChangeToYolo5(train_files, "train")
-ChangeToYolo5(val_files, "val")
-if isUseTest:
-    ChangeToYolo5(test_files, "test")
+if __name__ == '__main__':
+    # train_val_data_to_yolo_data("/data/Data2Model/huawei_pc_2023-03-29_clear_with_ok/train_val_data_cropped",
+    #                             "/data/Data2Model/huawei_pc_2023-03-29_clear_with_ok/yolo_data",
+    #                             "/data/Data2Model/huawei_pc_2023-03-29_clear_with_ok/class_names_list.txt")
+
+    find_no_seg_images("/data/Data2Model/huawei_pc_2023-03-29_clear_with_ok/yolo_data")
+

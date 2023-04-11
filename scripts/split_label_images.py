@@ -64,6 +64,9 @@ def split_label_images_by_img_path_list(img_path_list, save_dir, split_data_dir=
             if shapes is not None and len(shapes) > 0:
                 for index, shape in enumerate(shapes):
                     label_name = shape["label"]
+
+                    if label_name not in ["pengshang", "zhenyan"]:
+                        continue
                     label_save_dir = os.path.join(save_dir, label_name)
                     if not os.path.exists(label_save_dir):
                         os.makedirs(label_save_dir, exist_ok=True)
@@ -108,6 +111,7 @@ if __name__ == '__main__':
 
     # split_label_original_images("/data/Data2Model/test", "")
 
-    split_label_images_by_glob_path_list(["/data/Data2Model/train_original/*/*.jpg"],
-                                         "/data/Data2Model/train_split_new_v2")
+    split_label_images_by_glob_path_list(
+        ["/data/Data2Model/huawei_pc_2023-04-04_clear/train_val_data_cropped/val/*/*.jpg"],
+        "/data/Data2Model/huawei_pc_2023-04-04_clear/train_val_data_split/val")
 

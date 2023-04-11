@@ -63,5 +63,5 @@ def modify_labelme_label(source_path_glob, replace_dict):
 
 
 if __name__ == '__main__':
-    modify_labelme_label("/data/Data2Model/train_split_new_v2_sample/*/*/*.jpg",
-                         {"molie": "yise", "tongsedian": "yise", "zhenyan": "aoyan"})
+    modify_labelme_label("/data/Data2Model/huawei_pc_2023-04-04_clear_v2/train_val_data_cropped/*/*/*.jpg",
+                         {"yise1": "yise", "yise2": "yise", "yashnag": "yashang"})

@@ -25,5 +25,5 @@ def merge_data_files(source_path, target_path):
 
 
 if __name__ == '__main__':
-    merge_data_files("/data/Data2Model/huawei_pc_2023-03-29_clear/clear_data/train",
-                     "/data/Data2Model/huawei_pc_2023-03-29_clear/train_val_data/train")
+    merge_data_files("/data/Data2Model/huawei_pc_2023-04-04_clear/train_val_data_split/train/zhenyan",
+                     "/data/Data2Model/huawei_pc_2023-04-04_clear/train_val_data_cropped/train")

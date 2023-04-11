@@ -36,3 +36,11 @@
 # b = [1,7,10,13,14,16,18,19,21,23,44,47,50,53,56,59,57,61,62,64,66,87,90,93,96,99,100,103,105,106,108,110]
 # zhipo = [25,26,29,32,33,36,39,41,42,68,69,72,75,76,79,82,84,85,112,113,116,119,120,123,126,128, 129]
 # print(sorted(zhipo))
+import json
+with open(f"/home/logding/Downloads/train_ori_20230331_ng/0849-0001-02.json", "r") as f:
+    label_info = json.load(f)
+label_info["imageData"] = ''
+with open(f"/home/logding/Downloads/train_ori_20230331_ng/0849-0001-02.json", "w") as f:
+    json.dump(label_info, f, indent=2)
+
+print(1)
