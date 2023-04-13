@@ -31,13 +31,13 @@ def split_train_val(data_root, save_dir):
 
         images = glob.glob(f"{defect_path}/*/*.jpg")
         total_ = len(images)
-        val_images = random.sample(images, int(total_ * 0.2))
+        val_images = random.sample(images, int(total_ * 0.28))
         train_images = [i for i in images if i not in val_images]
 
         copy_imgs(val_images, os.path.join(save_dir, "val"))
-        copy_imgs(train_images, os.path.join(save_dir, "train"))
+        # copy_imgs(train_images, os.path.join(save_dir, "train"))
 
 
 if __name__ == '__main__':
-    split_train_val("/home/logding/Downloads/huawei_pc_clear",
-                    "/data/Data2Model/huawei_pc_2023-03-29_clear/clear_data")
+    split_train_val("/data/Data2Model/train/train_defect_guosha/guosha_0411_cropped",
+                    "/data/Data2Model/train/train_defect_guosha/guosha_0411_cropped_sample")

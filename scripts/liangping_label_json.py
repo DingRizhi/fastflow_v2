@@ -24,5 +24,5 @@ def set_to_liangpin_labelme_label(json_path_list):
 
 if __name__ == '__main__':
     set_to_liangpin_labelme_label(
-        glob.glob(f"/data/Data2Model/train/train_ok/train_ok_2023-04-07_guosha_cropped/*/*.json")
+        glob.glob(f"/data/Data2Model/train/train_defect_guosha/guosha_0411_cropped/*/*/*.json")
     )

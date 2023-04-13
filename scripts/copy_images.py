@@ -71,8 +71,8 @@ if __name__ == '__main__':
     # copy_image_path_list(glob.glob(f"/data/Data2Model/test_dataset/test_all/test_new/*/*.jpg"),
     #                      "/data/Data2Model/test")
 
-    copy_images_by_json_file(glob.glob(f"/data/Data2Model/train/train_ok_guosha/D件过杀/*/*.jpg"),
-                             "/data/Data2Model/train/train_ok_guosha/bak/D_guosha_json_0.15_0.2_5")
+    copy_images_by_json_file(glob.glob(f"/data/Data2Model/train/train_ok_guosha/A件0315过杀数据/*/*.jpg"),
+                             "/data/Data2Model/train/train_ok_guosha/A_0315_guosha_json_0.12_0.15")
 
 
     # sample_sub_dir_data("/data/Data2Model/train/train_ok/train_ok_2023-03-21_cropped",

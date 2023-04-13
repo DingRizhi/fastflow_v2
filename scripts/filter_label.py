@@ -48,6 +48,6 @@ def filter_labels_by_score(source_json_dir, save_dir, min_score, max_score):
 
 
 if __name__ == '__main__':
-    filter_labels_by_score("/data/Data2Model/train/train_ok_guosha/bak/D_guosha_json_0.15",
-                           "/data/Data2Model/train/train_ok_guosha/bak/D_guosha_json_0.15_0.2_5",
-                           0.15, 0.2)
+    filter_labels_by_score("/data/Data2Model/train/train_ok_guosha/D_guosha_json_0.01",
+                           "/data/Data2Model/train/train_ok_guosha/D_guosha_json_0.12_0.15",
+                           0.12, 0.15)

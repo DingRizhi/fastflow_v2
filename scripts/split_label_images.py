@@ -4,6 +4,7 @@ import json
 import copy
 import shutil
 from PIL import Image
+import tqdm
 
 
 def split_label_crop_images(labeled_img_dir, save_dir):
@@ -48,7 +49,7 @@ def split_label_images_by_img_path_list(img_path_list, save_dir, split_data_dir=
     if not os.path.exists(save_dir):
         os.makedirs(save_dir, exist_ok=True)
 
-    for img_path in img_path_list:
+    for img_path in tqdm.tqdm(img_path_list):
         json_path = img_path.replace("jpg", "json")
         # image = Image.open(img_path)
         image_base_name = os.path.basename(img_path)
@@ -65,8 +66,8 @@ def split_label_images_by_img_path_list(img_path_list, save_dir, split_data_dir=
                 for index, shape in enumerate(shapes):
                     label_name = shape["label"]
 
-                    if label_name not in ["pengshang", "zhenyan"]:
-                        continue
+                    # if label_name not in ["pengshang", "zhenyan"]:
+                    #     continue
                     label_save_dir = os.path.join(save_dir, label_name)
                     if not os.path.exists(label_save_dir):
                         os.makedirs(label_save_dir, exist_ok=True)
@@ -112,6 +113,6 @@ if __name__ == '__main__':
     # split_label_original_images("/data/Data2Model/test", "")
 
     split_label_images_by_glob_path_list(
-        ["/data/Data2Model/huawei_pc_2023-04-04_clear/train_val_data_cropped/val/*/*.jpg"],
-        "/data/Data2Model/huawei_pc_2023-04-04_clear/train_val_data_split/val")
+        ["/data/Data2Model/data/train_new_zangwu/train_new/*/*.jpg"],
+        "/data/Data2Model/data/train_new_zangwu_split")
 
