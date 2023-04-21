@@ -28,6 +28,21 @@ def copy_images_by_json_file(source_img_path_list, json_dir):
         shutil.copyfile(img_path, os.path.join(json_dir, img_name))
 
 
+def copy_images_by_jpg_file(source_json_path_list, img_dir):
+    json_name_dict = {}
+    for json_path in source_json_path_list:
+        json_name_dict[f"{os.path.basename(json_path)}"] = json_path
+
+    img_path_list = glob.glob(f"{img_dir}/*.jpg")
+    for img_path in tqdm.tqdm(img_path_list):
+        img_base_name = os.path.basename(img_path)
+        json_name = img_base_name.replace(".jpg", ".json")
+
+        json_path = json_name_dict[json_name]
+
+        shutil.copyfile(json_path, os.path.join(img_dir, json_name))
+
+
 def copy_image_path_list(image_path_list, save_dir, included_keys=None):
     if not os.path.exists(save_dir):
         os.mkdir(save_dir)
@@ -71,9 +86,11 @@ if __name__ == '__main__':
     # copy_image_path_list(glob.glob(f"/data/Data2Model/test_dataset/test_all/test_new/*/*.jpg"),
     #                      "/data/Data2Model/test")
 
-    copy_images_by_json_file(glob.glob(f"/data/Data2Model/train/train_ok_guosha/A件0315过杀数据/*/*.jpg"),
-                             "/data/Data2Model/train/train_ok_guosha/A_0315_guosha_json_0.12_0.15")
+    # copy_images_by_json_file(glob.glob(f"/data/Data2Model/data/train_val_new_zangwu/train/*/*.jpg"),
+    #                          "/data/Data2Model/data/new_zangwu_test/train_high_score")
 
+    copy_images_by_jpg_file(glob.glob(f"/data/Data2Model/data/train_val_new_zangwu/train/*/*.json"),
+                            "/data/Data2Model/data/new_zangwu_test/train_high_score_gt")
 
     # sample_sub_dir_data("/data/Data2Model/train/train_ok/train_ok_2023-03-21_cropped",
     #                     "/data/Data2Model/train/train_ok/train_ok_2023-03-21_cropped_sampled",

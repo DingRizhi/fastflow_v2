@@ -113,6 +113,6 @@ if __name__ == '__main__':
     # split_label_original_images("/data/Data2Model/test", "")
 
     split_label_images_by_glob_path_list(
-        ["/data/Data2Model/data/train_new_zangwu/train_new/*/*.jpg"],
-        "/data/Data2Model/data/train_new_zangwu_split")
+        ["/data/Data2Model/huawei_pc_2023-04-19_adt/infer_ins/test_diff_huashang_0.11/error/*.jpg"],
+        "/data/Data2Model/huawei_pc_2023-04-19_adt/infer_ins/test_diff_huashang_0.11/error_split")
 
